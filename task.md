@@ -1,0 +1,101 @@
+# Tasks
+
+The working task list for ParchiMatch Lite. Read [context.md](context.md) first.
+
+**Roles**
+- **Coding agent:** implements `Agent` tasks, one at a time, test-first, and marks them `review`.
+- **Claude (reviewer):** reviews and tests every change, runs evaluations, makes product and technical decisions, and keeps the docs true. Only Claude moves a task to `done`.
+- **You (owner):** real-world tasks (recording, publishing, people) and final yes/no on anything public.
+
+**Status values:** `todo` → `doing` → `review` → `done` (or `blocked`, with the reason).
+
+**Deadline:** Hacktoberfest Week 2 entry, publish target **Sat 17 Oct 2026**; hard deadline **Mon 19 Oct 2026, 12:29 PM IST** (Sun 18 Oct, 11:59 PM PDT).
+
+---
+
+## Code tasks (coding agent)
+
+### A1. Don't split thousands separators: `todo`
+**Why:** `splitOrder` splits on every comma, so `maggi 1,000 pcs` becomes two broken lines (open finding C01 in `docs/TEST_REPORT.md`).
+**Do:** in `src/orderlines.ts`, don't split on a comma that sits between a digit and exactly three digits followed by a non-digit (`1,000`, `12,500`). Leave other commas as they are. `maggi, 4 pack 1 ctn` (C02) stays a known limitation.
+**Done when:**
+- `maggi 1,000 pcs` stays one line.
+- `maggi 2 ctn, parle g 5/- 1 petti` still splits into two.
+- The characterization test for C01 is updated to the new expected behaviour, and C02's test is untouched.
+- `npm test` passes.
+- `docs/RULES.md` (if relevant), `docs/DESIGN.md` limitations and the README limitations are updated.
+
+### A2. Reuse the uploaded catalogue after a restart: `todo`
+**Why:** a catalogue uploaded in the app is saved to `<data>/catalog.csv`, but a restart loads the default synthetic catalogue unless `--catalog` points at the upload (HTTP-08).
+**Do:** in `src/server.ts`, when `--catalog` is **not** given, load `<data>/catalog.csv` if it exists and is valid; otherwise fall back to `data/synthetic/catalog.csv`. An explicit `--catalog` always wins. Log which file was loaded and why.
+**Done when:**
+- An e2e test covers the three cases: explicit flag, uploaded file present, nothing uploaded.
+- An invalid saved upload falls back with a logged warning instead of crashing.
+- `docs/API.md` (flag table) and `docs/DEPLOY.md` describe the rule.
+
+### A3. Show base quantities in green rows: `todo`
+**Why:** the operator should see "2 carton (288 packets)" before exporting, not only in the CSV.
+**Do:** add `baseQty` and `baseUnit` to the review row (server side, reusing `baseQuantity`/`baseUnit` from `src/validate.ts` and `src/review.ts`). Show them in `app/app.js` for green and confirmed rows. Recompute in the UI when the operator changes qty, unit or product (needs `unitsPerCarton` from `/api/catalog`, already sent).
+**Done when:**
+- A row test covers carton→packet, dozen→piece, and an unknown carton size (shows "carton size unknown").
+- Every value goes through `esc()`.
+- `docs/API.md` lists the new row fields.
+
+### A4. Labelling helper for a human-written test set: `todo`
+**Why:** the most valuable missing evidence is order lines written by people other than the author ([EVALUATION.md](docs/EVALUATION.md#recommended-next-measurement-a-human-written-test-set)).
+**Do:** `src/label.ts` + `npm run label -- --catalog <csv> --in <raw.txt> --out <labelled.jsonl>`. It reads one order line per line of the input and, for each line, shows fuzzy's top 5 candidates and the parsed qty/unit. It then asks in the terminal (`node:readline`) for: product number (or `n` = needs review / not stocked), quantity, unit, and tags. It writes the [labelled JSONL format](docs/DATA_FORMATS.md#labelled-order-lines-jsonl). It must be resumable: it skips ids already in `--out`.
+**Done when:**
+- A test drives it with piped stdin, and its output passes `readJsonl` with a well-formed `gold` on every line.
+- It never writes into `data/synthetic/`.
+- The README and `docs/EVALUATION.md` mention the command.
+
+### A5. One-command start script: `todo`
+**Why:** a shopkeeper (or the demo) should start everything with one command.
+**Do:** `npm run app` → `src/start.ts`. It:
+1. checks Node ≥ 24;
+2. checks Ollama is reachable;
+3. checks the default model is pulled. If not, it **prints** the exact `ollama pull` command and starts in fuzzy-only mode. It must not download anything itself.
+4. starts the server;
+5. prints the URL, and opens the browser only with `--open`.
+
+**Done when:**
+- It works with Ollama stopped (fuzzy-only, clear message).
+- It works with Ollama running.
+- `docs/DEPLOY.md` and the README Quick start use it.
+- It has no dependencies.
+
+### A6. Misspelled product names that contain a number: `blocked`
+**Why:** `5 sttar 20 wala 5box` is now asked about instead of matched.
+**Blocked because:** the only evidence comes from the locked test set. Claude will look for the same pattern in `data/synthetic/dev.jsonl` and decide. Don't start this.
+
+---
+
+## Review and decision tasks (Claude)
+
+| ID | Task | Status |
+|---|---|---|
+| C1 | Model bake-off on practice lines; choose default model | done: Gemma 4 E2B (see context.md) |
+| C2 | Confirm the chosen model once on the locked test set; update all docs, site and README numbers | done: hybrid 88.2% / 0 dangerous / 2.2 s |
+| C3 | Update the landing site (`site/`) for the model change and new numbers; check every claim in `site/CLAIMS.md` | done: results, index, get-started, FAQ, CLAIMS updated; bake-off section added; canonical/OG/sitemap URLs set to GitHub Pages |
+| C4 | Review each agent task: read the diff, run `npm test`, run dev-set exact/fuzzy/hybrid, check docs, then `done` or send back | ongoing |
+| C5 | After A1–A3 land: one final locked-test run (exact, fuzzy, hybrid) and the final numbers everywhere | todo |
+| C6 | Decide A6 using dev-set evidence only | todo |
+| C7 | Draft the DEV post as an unpublished draft (only on your yes) | todo |
+| C8 | Score and lock the human-written test set when it arrives (after A4) | todo |
+
+## Owner tasks (you)
+
+| ID | Task | Status |
+|---|---|---|
+| U1 | Click through `docs/MANUAL_TEST_CHECKLIST.md` in a browser with other apps closed | todo |
+| U2 | Ask 3–5 friends/relatives to type orders for 15 catalogue items, the way they'd really WhatsApp them (feeds A4/C8) | todo |
+| U3 | Record a 60–90 s demo with Wi-Fi off (sample order 03), save as `site/assets/demo.mp4` | todo |
+| U4 | Commit and push in reviewed batches (no AI co-author lines); enable GitHub Pages (Settings → Pages → Source: GitHub Actions) | todo |
+| U5 | Rewrite the DEV post in your own voice, add screenshots/video, publish with `#devchallenge #hf26challenge`, and disclose AI help in the post | todo |
+
+## Not doing (decided)
+
+- **Bigger models (≥ 6 GB):** Gemma 4 E4B fit only 2.5 of 6 GB on the GPU; slowest lines took 37 s. RAM, not disk, is the limit.
+- **Hosting the app publicly:** it binds to 127.0.0.1 with no authentication by design. The public site is static and holds no shop data.
+- **Fine-tuning (Tinker):** skipped for this deadline. The base model leaves too few, too scattered misses to justify a day of work.
+- **Voice notes, photo OCR, WhatsApp integration, direct Tally/Busy writes:** out of scope for this entry.
