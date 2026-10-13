@@ -141,8 +141,8 @@ parchimatch/
 | Measure | Value |
 |---|---|
 | Model load (cold) | ~15 s |
-| Model call, `hybrid`, locked synthetic test (Gemma 4 E2B) | p50 2.2 s, p95 2.8 s |
-| Model call on every line (`llm-cand`, Gemma 4 E2B) | p50 2.2 s, p95 2.6 s |
+| Model call, `hybrid`, locked synthetic test (Gemma 4 E2B) | p50 1.5 s, p95 2.6 s (up to 2.3 s / 4.5 s when the Mac is busy) |
+| Model call on every line (`llm-cand`, Gemma 4 E2B) | p50 1.5 s, p95 3.2 s |
 | Model calls needed by `hybrid` | 31 of 80 test lines |
 | Sample order 03, 13 lines, first run (previous model, Qwen3.5-4B) | 28.8 s |
 | Same order after learning two names (previous model) | 5.3 s |

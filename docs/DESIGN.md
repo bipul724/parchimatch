@@ -79,7 +79,7 @@ On the locked 80-line synthetic test (current code, Gemma 4 E2B): hybrid 88.2% w
 | `gemma4:e4b-it-qat` | 6.0 GB | 37 s worst-case on 40 lines | Rejected: only 2.5 GB fit on the GPU next to the app on 8 GB RAM |
 
 **Correction:** an earlier version of this document dismissed Gemma 4 E2B as "too large" based on download sizes. Measurement showed it runs comfortably, and it's faster than the 4B models. Bigger models than this still don't work on 8 GB RAM; more disk space doesn't change that.
-**On the locked test:** hybrid with Gemma 4 E2B handles 88.2% of answerable lines automatically (previous model: 86.3%), with 0 wrong rows and 2.2 s per model call (previous: 5.1 s).
+**On the locked test:** hybrid with Gemma 4 E2B handles 88.2% of answerable lines automatically (previous model: 86.3%), with 0 wrong rows and about 1.5–2.3 s per model call (p50, depending on load; previous: 5.1 s).
 **Settings:** temperature 0, fixed seed, thinking off, 2048-token context, JSON schema output, one repair retry.
 
 ### D8. Zero dependencies, plain files

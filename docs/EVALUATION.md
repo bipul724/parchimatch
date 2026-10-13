@@ -84,14 +84,16 @@ On 13 Oct 2026, with more disk space available, five local models were compared 
 
 ### Locked synthetic test: current code and default model (80 lines, 13 Oct 2026)
 
+Final confirmation run (C5) at commit `8f9a824`, after every code task had landed. Every outcome matched the earlier Gemma 4 E2B run line for line. The C5 run overlapped other test jobs on the same Mac, so the two model methods were run once more with nothing else running, only to measure speed. All 80 rows were identical again (product, quantity, unit, status and question). The latencies below come from that run.
+
 | Method | Auto-accept acc | Dangerous | Zero typing | Flag recall | Review load | Model calls | Model p50 / p95 |
 |---|---:|---:|---:|---:|---:|---:|---:|
 | exact | 54.9% | 0 | 54.9% | 100% | 65.0% | 0 | – |
 | fuzzy | 84.3% | 0 | 84.3% | 100% | 46.3% | 0 | – |
-| llm-cand | 84.3% | 0 | 92.2% | 100% | 46.3% | 80 | 2.2 s / 2.6 s |
-| **hybrid** | **88.2%** | **0** | **92.2%** | **100%** | **43.8%** | **31** | **2.2 s / 2.8 s** |
+| llm-cand | 84.3% | 0 | 92.2% | 100% | 46.3% | 80 | 1.5 s / 3.2 s |
+| **hybrid** | **88.2%** | **0** | **92.2%** | **100%** | **43.8%** | **31** | **1.5 s / 2.6 s** |
 
-Model: `gemma4:e2b-it-qat`, temperature 0, thinking off, top-8 candidates, MacBook Air M2 8 GB. 100% valid JSON on the first try and no model errors in either model method.
+Model: `gemma4:e2b-it-qat`, temperature 0, thinking off, top-8 candidates, MacBook Air M2 8 GB. 100% valid JSON on the first try and no model errors in either model method. Latency depends on what else the Mac is doing. All three hybrid runs: 2.2 s / 2.8 s (first Gemma 4 E2B run), 2.3 s / 4.5 s (C5, while other test jobs ran), and 1.5 s / 2.6 s (nothing else running).
 
 **Reading it honestly:** no method let a wrong row through. With Gemma 4 E2B, hybrid auto-accepts two more lines than fuzzy alone (`thmusup 2ltr pc 6`, `Sarf 500gm 2 Ctn`) and gives two correct one-tap suggestions (`everest halddi 100gm`, `frooti 10 ka`). It suggested the wrong size for `amul butter aadha kilo` (100 g instead of 500 g), misread Devanagari `पारले जी 20 वाली` as Frooti, and gave a nonsense suggestion on `5 sttar 20 wala 5box`, where the parser finds no product words. All three were flagged, so they're safe but cost the operator a choice.
 
