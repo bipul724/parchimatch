@@ -1,0 +1,112 @@
+sku,name,brand,variant,mrp,sell_units,units_per_carton,aliases
+PRLG-5,Parle-G Biscuit,Parle,₹5 pack,5,packet|carton,144,parle g
+PRLG-10,Parle-G Biscuit,Parle,₹10 pack,10,packet|carton,72,parle g
+PRLG-20,Parle-G Biscuit,Parle,₹20 pack,20,packet|carton,36,parle g
+PRLG-50,Parle-G Biscuit,Parle,₹50 pack,50,packet|carton,12,parle g
+MONACO-10,Monaco Biscuit,Parle,₹10 pack,10,packet|carton,60,monaco
+MONACO-30,Monaco Biscuit,Parle,₹30 pack,30,packet|carton,24,monaco
+HIDESEEK-10,Hide & Seek,Parle,₹10 pack,10,packet|carton,60,hide and seek|hide & seek
+HIDESEEK-30,Hide & Seek,Parle,₹30 pack,30,packet|carton,24,hide and seek|hide & seek
+KRACKJACK-10,Krackjack,Parle,₹10 pack,10,packet|carton,60,krackjack
+GDCASHEW-10,Good Day Cashew,Britannia,₹10 pack,10,packet|carton,60,good day cashew
+GDCASHEW-30,Good Day Cashew,Britannia,₹30 pack,30,packet|carton,24,good day cashew
+GDBUTTER-10,Good Day Butter,Britannia,₹10 pack,10,packet|carton,60,good day butter
+MARIE-10,Marie Gold,Britannia,₹10 pack,10,packet|carton,60,marie gold|marie
+MARIE-30,Marie Gold,Britannia,₹30 pack,30,packet|carton,24,marie gold|marie
+BOURBON-10,Bourbon,Britannia,₹10 pack,10,packet|carton,60,bourbon
+BOURBON-30,Bourbon,Britannia,₹30 pack,30,packet|carton,,bourbon
+DARKFAN-10,Dark Fantasy Choco Fills,Sunfeast,₹10 pack,10,packet|carton,48,dark fantasy
+DARKFAN-40,Dark Fantasy Choco Fills,Sunfeast,₹40 pack,40,packet|carton,24,dark fantasy
+MAGGI-70G,Maggi Masala Noodles,Nestle,70 g single,14,packet|carton,96,maggi
+MAGGI4P-280G,Maggi Masala Noodles 4-Pack,Nestle,280 g,56,packet|carton,24,maggi 4 pack
+YIPPEE-60G,Yippee Magic Masala Noodles,Sunfeast,60 g,15,packet|carton,96,yippee
+CHINGS-150G,Ching's Hakka Noodles,Ching's,150 g,40,packet|carton,48,chings hakka|chings noodles
+TATASALT-1KG,Tata Salt,Tata,1 kg,28,packet|carton,25,tata salt
+TATASALT-500G,Tata Salt,Tata,500 g,15,packet|carton,50,tata salt
+AASHATTA-5KG,Aashirvaad Atta,ITC,5 kg,260,bag,,aashirvaad atta|aashirvaad
+AASHATTA-10KG,Aashirvaad Atta,ITC,10 kg,495,bag,,aashirvaad atta|aashirvaad
+FORTATTA-5KG,Fortune Chakki Atta,Fortune,5 kg,240,bag,,fortune atta
+FORTATTA-10KG,Fortune Chakki Atta,Fortune,10 kg,460,bag,,fortune atta
+FORTOIL-1L,Fortune Soyabean Oil,Fortune,1 L pouch,155,piece|carton,12,fortune oil|fortune soyabean
+FORTOIL-5L,Fortune Soyabean Oil,Fortune,5 L,760,piece,,fortune oil|fortune soyabean
+SAFFOLA-1L,Saffola Gold Oil,Saffola,1 L pouch,210,piece|carton,12,saffola gold|saffola
+SAFFOLA-5L,Saffola Gold Oil,Saffola,5 L,1050,piece,,saffola gold|saffola
+TOORDAL-1KG,Tata Sampann Toor Dal,Tata Sampann,1 kg,180,packet|carton,20,tata toor dal|tata sampann toor
+INDIAGATE-1KG,India Gate Basmati Rice,India Gate,1 kg,150,packet|carton,20,india gate basmati|india gate
+INDIAGATE-5KG,India Gate Basmati Rice,India Gate,5 kg,690,bag,,india gate basmati|india gate
+MADHUR-1KG,Madhur Sugar,Madhur,1 kg,52,packet|carton,30,madhur sugar|madhur
+MADHUR-5KG,Madhur Sugar,Madhur,5 kg,250,bag,,madhur sugar|madhur
+KITCHENKING-100G,MDH Kitchen King Masala,MDH,100 g,90,packet|dozen|carton,60,mdh kitchen king|kitchen king
+CHANAMASALA-100G,MDH Chana Masala,MDH,100 g,85,packet|dozen|carton,60,mdh chana masala
+EVHALDI-100G,Everest Turmeric Powder,Everest,100 g,38,packet|dozen|carton,100,everest turmeric
+EVHALDI-200G,Everest Turmeric Powder,Everest,200 g,72,packet|dozen|carton,50,everest turmeric
+EVGARAM-100G,Everest Garam Masala,Everest,100 g,82,packet|dozen|carton,60,everest garam masala
+TATATEA-250G,Tata Tea Premium,Tata,250 g,145,packet|carton,40,tata tea premium|tata tea
+TATATEA-500G,Tata Tea Premium,Tata,500 g,285,packet|carton,20,tata tea premium|tata tea
+TATATEA-1KG,Tata Tea Premium,Tata,1 kg,560,packet|carton,10,tata tea premium|tata tea
+REDLABEL-250G,Brooke Bond Red Label,Brooke Bond,250 g,150,packet|carton,40,red label
+REDLABEL-500G,Brooke Bond Red Label,Brooke Bond,500 g,295,packet|carton,20,red label
+WAGHBAKRI-250G,Wagh Bakri Tea,Wagh Bakri,250 g,140,packet|carton,40,wagh bakri
+WAGHBAKRI-500G,Wagh Bakri Tea,Wagh Bakri,500 g,275,packet|carton,20,wagh bakri
+NESCAFE-50G,Nescafe Classic,Nestle,50 g,190,piece|dozen|carton,48,nescafe classic|nescafe
+NESCAFE-100G,Nescafe Classic,Nestle,100 g,360,piece|dozen|carton,24,nescafe classic|nescafe
+AMULBUTTER-100G,Amul Butter,Amul,100 g,60,piece|carton,50,amul butter
+AMULBUTTER-500G,Amul Butter,Amul,500 g,285,piece|carton,20,amul butter
+AMULGHEE-500ML,Amul Ghee,Amul,500 ml,330,piece|carton,24,amul ghee
+AMULGHEE-1L,Amul Ghee,Amul,1 L,650,piece|carton,12,amul ghee
+LAYSMAG-10,Lay's India's Magic Masala,PepsiCo,₹10 pack,10,packet|carton,48,lays magic masala
+LAYSMAG-20,Lay's India's Magic Masala,PepsiCo,₹20 pack,20,packet|carton,24,lays magic masala
+LAYSCRM-10,Lay's American Cream & Onion,PepsiCo,₹10 pack,10,packet|carton,48,lays cream onion|lays cream and onion
+LAYSCRM-20,Lay's American Cream & Onion,PepsiCo,₹20 pack,20,packet|carton,24,lays cream onion|lays cream and onion
+LAYSCLS-10,Lay's Classic Salted,PepsiCo,₹10 pack,10,packet|carton,48,lays classic salted|lays salted
+LAYSCLS-20,Lay's Classic Salted,PepsiCo,₹20 pack,20,packet|carton,24,lays classic salted|lays salted
+KURKURE-10,Kurkure Masala Munch,PepsiCo,₹10 pack,10,packet|carton,48,kurkure masala munch|kurkure
+KURKURE-20,Kurkure Masala Munch,PepsiCo,₹20 pack,20,packet|carton,24,kurkure masala munch|kurkure
+MADANGLES-10,Bingo Mad Angles,ITC,₹10 pack,10,packet|carton,48,bingo mad angles|mad angles
+MADANGLES-20,Bingo Mad Angles,ITC,₹20 pack,20,packet|carton,24,bingo mad angles|mad angles
+BHUJIA-200G,Haldiram's Aloo Bhujia,Haldiram's,200 g,55,packet|carton,30,haldiram aloo bhujia|aloo bhujia
+BHUJIA-400G,Haldiram's Aloo Bhujia,Haldiram's,400 g,105,packet|carton,15,haldiram aloo bhujia|aloo bhujia
+MOONGDAL-200G,Haldiram's Moong Dal,Haldiram's,200 g,55,packet|carton,30,haldiram moong dal
+FROOTI-10,Frooti Mango Drink,Parle Agro,₹10 tetra pack,10,piece|carton,40,frooti
+FROOTI-20,Frooti Mango Drink,Parle Agro,₹20 bottle,20,piece|carton,30,frooti
+COKE-750ML,Coca-Cola,Coca-Cola,750 ml,40,piece|carton,24,coca cola|coke
+COKE-2L,Coca-Cola,Coca-Cola,2 L,95,piece|carton,9,coca cola|coke
+THUMSUP-750ML,Thums Up,Coca-Cola,750 ml,40,piece|carton,24,thums up
+THUMSUP-2L,Thums Up,Coca-Cola,2 L,95,piece|carton,9,thums up
+BISLERI-500ML,Bisleri Water,Bisleri,500 ml,10,piece|carton,24,bisleri
+BISLERI-1L,Bisleri Water,Bisleri,1 L,20,piece|carton,12,bisleri
+DAIRYMILK-10,Dairy Milk,Cadbury,₹10 bar,10,piece|dozen|carton,,dairy milk|cadbury dairy milk
+DAIRYMILK-20,Dairy Milk,Cadbury,₹20 bar,20,piece|dozen|carton,,dairy milk|cadbury dairy milk
+DAIRYMILK-40,Dairy Milk,Cadbury,₹40 bar,40,piece|dozen|carton,120,dairy milk|cadbury dairy milk
+FIVESTAR-10,5 Star,Cadbury,₹10 bar,10,piece|dozen|carton,240,5 star
+FIVESTAR-20,5 Star,Cadbury,₹20 bar,20,piece|dozen|carton,120,5 star
+KITKAT-10,KitKat,Nestle,₹10 bar,10,piece|dozen|carton,240,kitkat|kit kat
+KITKAT-20,KitKat,Nestle,₹20 bar,20,piece|dozen|carton,120,kitkat|kit kat
+COLGATE-100G,Colgate Strong Teeth,Colgate,100 g,60,piece|dozen|carton,72,colgate strong teeth|colgate
+COLGATE-200G,Colgate Strong Teeth,Colgate,200 g,110,piece|dozen|carton,36,colgate strong teeth|colgate
+CLOSEUP-80G,Close-Up Toothpaste,HUL,80 g,55,piece|dozen|carton,72,closeup|close up
+CLOSEUP-150G,Close-Up Toothpaste,HUL,150 g,100,piece|dozen|carton,36,closeup|close up
+LUX-10,Lux Soap,HUL,₹10 bar,10,piece|dozen|carton,144,lux
+LUX-35,Lux Soap,HUL,₹35 bar,35,piece|dozen|carton,72,lux
+LIFEBUOY-10,Lifebuoy Soap,HUL,₹10 bar,10,piece|dozen|carton,144,lifebuoy
+LIFEBUOY-30,Lifebuoy Soap,HUL,₹30 bar,30,piece|dozen|carton,72,lifebuoy
+DETTOLSOAP-75G,Dettol Soap,Reckitt,75 g,45,piece|dozen|carton,72,dettol soap
+DETTOLSOAP-125G,Dettol Soap,Reckitt,125 g,70,piece|dozen|carton,48,dettol soap
+DETTOLLIQ-125ML,Dettol Antiseptic Liquid,Reckitt,125 ml,80,piece|carton,48,dettol liquid
+DETTOLLIQ-250ML,Dettol Antiseptic Liquid,Reckitt,250 ml,155,piece|carton,24,dettol liquid
+CLINICPLUS-1,Clinic Plus Shampoo,HUL,₹1 sachet strip,1,packet|carton,,clinic plus
+CLINICPLUS-130,Clinic Plus Shampoo,HUL,₹130 bottle 175 ml,130,piece|carton,24,clinic plus
+PARACHUTE-100ML,Parachute Coconut Oil,Marico,100 ml,50,piece|dozen|carton,96,parachute
+PARACHUTE-250ML,Parachute Coconut Oil,Marico,250 ml,115,piece|dozen|carton,48,parachute
+SURF-500G,Surf Excel Easy Wash,HUL,500 g,75,packet|carton,24,surf excel|surf
+SURF-1KG,Surf Excel Easy Wash,HUL,1 kg,140,packet|carton,12,surf excel|surf
+GHADI-500G,Ghadi Detergent Powder,RSPL,500 g,35,packet|carton,40,ghadi
+GHADI-1KG,Ghadi Detergent Powder,RSPL,1 kg,70,packet|carton,20,ghadi
+TIDE-1KG,Tide Detergent,P&G,1 kg,110,packet|carton,20,tide
+RIN-10,Rin Bar,HUL,₹10 bar,10,piece|carton,100,rin bar|rin
+VIMBAR-10,Vim Bar,HUL,₹10 bar,10,piece|carton,90,vim bar
+VIMBAR-20,Vim Bar,HUL,₹20 bar,20,piece|carton,60,vim bar
+VIMLIQ-250ML,Vim Liquid,HUL,250 ml,55,piece|carton,36,vim liquid|vim gel
+HARPIC-500ML,Harpic Toilet Cleaner,Reckitt,500 ml,99,piece|carton,24,harpic
+HARPIC-1L,Harpic Toilet Cleaner,Reckitt,1 L,190,piece|carton,12,harpic
+LIZOL-500ML,Lizol Floor Cleaner,Reckitt,500 ml,115,piece|carton,24,lizol

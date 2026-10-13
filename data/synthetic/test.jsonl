@@ -1,0 +1,80 @@
+{"id":"t001","text":"lays cream onion 10 wali 5 ctns","gold":{"sku":"LAYSCRM-10","qty":5,"unit":"carton","status":"ok"},"tags":["price_variant"]}
+{"id":"t002","text":"foortune atta 5 kg 1 bora","gold":{"sku":"FORTATTA-5KG","qty":1,"unit":"bag","status":"ok"},"tags":["hinglish_unit","misspelling","size_variant"]}
+{"id":"t003","text":"aashirvaad 10 kilo ek bora","gold":{"sku":"AASHATTA-10KG","qty":1,"unit":"bag","status":"ok"},"tags":["hindi_number","hinglish_unit","size_variant"]}
+{"id":"t004","text":"yippee 12 pkts","gold":{"sku":"YIPPEE-60G","qty":12,"unit":"packet","status":"ok"},"tags":[]}
+{"id":"t005","text":"kit kat ₹10 do dozen","gold":{"sku":"KITKAT-10","qty":2,"unit":"dozen","status":"ok"},"tags":["hindi_number","price_variant"]}
+{"id":"t006","text":"AASIRVAAD EK BORA","gold":{"sku":null,"qty":1,"unit":"bag","status":"needs_review"},"tags":["ambiguous_variant","hindi_number","hinglish_unit","misspelling"]}
+{"id":"t007","text":"thmusup 2ltr pc 6","gold":{"sku":"THUMSUP-2L","qty":6,"unit":"piece","status":"ok"},"tags":["hindi_name","misspelling","size_variant","unit_first"]}
+{"id":"t008","text":"madhur cheeni 1 petti","gold":{"sku":null,"qty":1,"unit":"carton","status":"needs_review"},"tags":["ambiguous_variant","hindi_name","hinglish_unit"]}
+{"id":"t009","text":"dairy milk 20/-","gold":{"sku":"DAIRYMILK-20","qty":null,"unit":null,"status":"needs_review"},"tags":["missing_qty","price_variant"]}
+{"id":"t010","text":"aahsirvaad 5 kg 2katta","gold":{"sku":"AASHATTA-5KG","qty":2,"unit":"bag","status":"ok"},"tags":["glued","hinglish_unit","misspelling","size_variant"]}
+{"id":"t011","text":"red label 250gm 2 petti","gold":{"sku":"REDLABEL-250G","qty":2,"unit":"carton","status":"ok"},"tags":["hinglish_unit","size_variant"]}
+{"id":"t012","text":"safffola 1 litre 1 ctn","gold":{"sku":"SAFFOLA-1L","qty":1,"unit":"carton","status":"ok"},"tags":["misspelling","size_variant"]}
+{"id":"t013","text":"Wagh Bakkri Chai 1500gm 2 Petti","gold":{"sku":null,"qty":2,"unit":"carton","status":"needs_review"},"tags":["hindi_name","hinglish_unit","misspelling","size_variant","variant_not_stocked"]}
+{"id":"t014","text":"dairy milk ₹40 darjan 3","gold":{"sku":"DAIRYMILK-40","qty":3,"unit":"dozen","status":"ok"},"tags":["hinglish_unit","price_variant","unit_first"]}
+{"id":"t015","text":"monako ₹10 10 ctn","gold":{"sku":"MONACO-10","qty":10,"unit":"carton","status":"ok"},"tags":["misspelling","price_variant"]}
+{"id":"t016","text":"5 PETTI ALOO BHUJIA 400GM","gold":{"sku":"BHUJIA-400G","qty":5,"unit":"carton","status":"ok"},"tags":["hinglish_unit","size_variant","word_order"]}
+{"id":"t017","text":"vim 10rs 20","gold":{"sku":"VIMBAR-10","qty":20,"unit":null,"status":"needs_review"},"tags":["brand_only","missing_unit","price_variant"]}
+{"id":"t018","text":"पारले जी 20 वाली 1 पेटी","gold":{"sku":"PRLG-20","qty":1,"unit":"carton","status":"ok"},"tags":["devanagari","price_variant"]}
+{"id":"t019","text":"kitchen king das packet","gold":{"sku":"KITCHENKING-100G","qty":10,"unit":"packet","status":"ok"},"tags":["hindi_number"]}
+{"id":"t020","text":"mdh chana masala do ctn","gold":{"sku":"CHANAMASALA-100G","qty":2,"unit":"carton","status":"ok"},"tags":["hindi_number"]}
+{"id":"t021","text":"amul butter aadha kilo 2 box","gold":{"sku":"AMULBUTTER-500G","qty":2,"unit":"carton","status":"ok"},"tags":["informal_size","size_variant"]}
+{"id":"t022","text":"aml ghee 500ml 50 pcs","gold":{"sku":"AMULGHEE-500ML","qty":50,"unit":"piece","status":"ok"},"tags":["misspelling","size_variant"]}
+{"id":"t023","text":"aloo bhujia 2 ctns","gold":{"sku":null,"qty":2,"unit":"carton","status":"needs_review"},"tags":["ambiguous_variant"]}
+{"id":"t024","text":"4 katta fortune atta","gold":{"sku":null,"qty":4,"unit":"bag","status":"needs_review"},"tags":["ambiguous_variant","hinglish_unit","word_order"]}
+{"id":"t025","text":"RED LABELL 250 GM - 20 PKTS","gold":{"sku":"REDLABEL-250G","qty":20,"unit":"packet","status":"ok"},"tags":["misspelling","size_variant"]}
+{"id":"t026","text":"dark fantasy 50 wala 3 petti bhej dena","gold":{"sku":null,"qty":3,"unit":"carton","status":"needs_review"},"tags":["filler","hinglish_unit","price_variant","variant_not_stocked"]}
+{"id":"t027","text":"everest halddi 100gm 2 ctn","gold":{"sku":"EVHALDI-100G","qty":2,"unit":"carton","status":"ok"},"tags":["hindi_name","misspelling","size_variant"]}
+{"id":"t028","text":"everest garam masala 10","gold":{"sku":"EVGARAM-100G","qty":10,"unit":null,"status":"needs_review"},"tags":["missing_unit"]}
+{"id":"t029","text":"parakhute tel 250 ml 1 box","gold":{"sku":"PARACHUTE-250ML","qty":1,"unit":"carton","status":"ok"},"tags":["hindi_name","misspelling","size_variant"]}
+{"id":"t030","text":"red label cahi 500gm - 10 pkt","gold":{"sku":"REDLABEL-500G","qty":10,"unit":"packet","status":"ok"},"tags":["hindi_name","misspelling","size_variant"]}
+{"id":"t031","text":"CADBURY DAIRY MILK 10 RS 4 BOX BHEJ DO","gold":{"sku":"DAIRYMILK-10","qty":4,"unit":"carton","status":"needs_review"},"tags":["carton_size_unknown","filler","price_variant"]}
+{"id":"t032","text":"dark fantasy 40 wali 3ctn","gold":{"sku":"DARKFAN-40","qty":3,"unit":"carton","status":"ok"},"tags":["glued","price_variant"]}
+{"id":"t033","text":"dettol 125ml 5 ctn","gold":{"sku":"DETTOLLIQ-125ML","qty":5,"unit":"carton","status":"ok"},"tags":["brand_only","size_variant"]}
+{"id":"t034","text":"6 pc rin bar","gold":{"sku":"RIN-10","qty":6,"unit":"piece","status":"ok"},"tags":["word_order"]}
+{"id":"t035","text":"frooti 10 ka 5petti","gold":{"sku":"FROOTI-10","qty":5,"unit":"carton","status":"ok"},"tags":["glued","hinglish_unit","informal_price","price_variant"]}
+{"id":"t036","text":"Bisleri 1 Ltr 5 Nag","gold":{"sku":"BISLERI-1L","qty":5,"unit":"piece","status":"ok"},"tags":["hinglish_unit","size_variant"]}
+{"id":"t037","text":"madhur shakkar 1kg 5 pack","gold":{"sku":"MADHUR-1KG","qty":5,"unit":"packet","status":"ok"},"tags":["hindi_name","size_variant"]}
+{"id":"t038","text":"colgate strong teeth 200 gram 2 petti","gold":{"sku":"COLGATE-200G","qty":2,"unit":"carton","status":"ok"},"tags":["hinglish_unit","size_variant"]}
+{"id":"t039","text":"5 sttar 20 wala 5box","gold":{"sku":"FIVESTAR-20","qty":5,"unit":"carton","status":"ok"},"tags":["glued","misspelling","number_in_name","price_variant"]}
+{"id":"t040","text":"Clinic Pls 1rs 20 Pkt","gold":{"sku":"CLINICPLUS-1","qty":20,"unit":"packet","status":"ok"},"tags":["misspelling","price_variant"]}
+{"id":"t041","text":"2 peti ghadi","gold":{"sku":null,"qty":2,"unit":"carton","status":"needs_review"},"tags":["ambiguous_variant","hinglish_unit","word_order"]}
+{"id":"t042","text":"maaza 3 dz","gold":{"sku":null,"qty":3,"unit":"dozen","status":"needs_review"},"tags":["not_in_catalogue"]}
+{"id":"t043","text":"TATA TEA PREMIUM 1 PETI","gold":{"sku":null,"qty":1,"unit":"carton","status":"needs_review"},"tags":["ambiguous_variant","hinglish_unit"]}
+{"id":"t044","text":"saffola tel 5ltr 20 pcs","gold":{"sku":"SAFFOLA-5L","qty":20,"unit":"piece","status":"ok"},"tags":["hindi_name","size_variant"]}
+{"id":"t045","text":"lays 10rs 2 peti","gold":{"sku":null,"qty":2,"unit":"carton","status":"needs_review"},"tags":["ambiguous_variant","brand_only","hinglish_unit","price_variant"]}
+{"id":"t046","text":"PONDS POWDER 5 DZN","gold":{"sku":null,"qty":5,"unit":"dozen","status":"needs_review"},"tags":["not_in_catalogue"]}
+{"id":"t047","text":"Sarf 500gm 2 Ctn","gold":{"sku":"SURF-500G","qty":2,"unit":"carton","status":"ok"},"tags":["hindi_name","size_variant"]}
+{"id":"t048","text":"hajmola 6 nag","gold":{"sku":null,"qty":6,"unit":"piece","status":"needs_review"},"tags":["not_in_catalogue"]}
+{"id":"t049","text":"amul butter 100gm 20 pis","gold":{"sku":"AMULBUTTER-100G","qty":20,"unit":"piece","status":"ok"},"tags":["informal_unit","size_variant"]}
+{"id":"t050","text":"ponds powder 3 darjan","gold":{"sku":null,"qty":3,"unit":"dozen","status":"needs_review"},"tags":["not_in_catalogue"]}
+{"id":"t051","text":"24 set sfafola 1 ltr","gold":{"sku":"SAFFOLA-1L","qty":24,"unit":null,"status":"needs_review"},"tags":["misspelling","size_variant","unknown_unit","word_order"]}
+{"id":"t052","text":"cadbury dairy milk rs 40 - 10 dozen","gold":{"sku":"DAIRYMILK-40","qty":10,"unit":"dozen","status":"ok"},"tags":["price_variant"]}
+{"id":"t053","text":"Marie 10 Wala 24","gold":{"sku":"MARIE-10","qty":24,"unit":null,"status":"needs_review"},"tags":["missing_unit","price_variant"]}
+{"id":"t054","text":"Mad Angless 10 Wali 20 Packet","gold":{"sku":"MADANGLES-10","qty":20,"unit":"packet","status":"ok"},"tags":["misspelling","price_variant"]}
+{"id":"t055","text":"parle g 5 ctn","gold":{"sku":null,"qty":5,"unit":"carton","status":"needs_review"},"tags":["ambiguous_variant"]}
+{"id":"t056","text":"tata patti 250 gm 1 ctn bhej dena","gold":{"sku":"TATATEA-250G","qty":1,"unit":"carton","status":"ok"},"tags":["filler","hindi_name","size_variant"]}
+{"id":"t057","text":"EVEREST GARAM MASALA 5 PKT","gold":{"sku":"EVGARAM-100G","qty":5,"unit":"packet","status":"ok"},"tags":[]}
+{"id":"t058","text":"colgat 200g 4 ctn","gold":{"sku":"COLGATE-200G","qty":4,"unit":"carton","status":"ok"},"tags":["misspelling","size_variant"]}
+{"id":"t059","text":"cadbury dairy miilk 40/- box 2 chahiye","gold":{"sku":"DAIRYMILK-40","qty":2,"unit":"carton","status":"ok"},"tags":["filler","misspelling","price_variant","unit_first"]}
+{"id":"t060","text":"bisleri 3 peti","gold":{"sku":null,"qty":3,"unit":"carton","status":"needs_review"},"tags":["ambiguous_variant","hinglish_unit"]}
+{"id":"t061","text":"dettol soap bees nag","gold":{"sku":null,"qty":20,"unit":"piece","status":"needs_review"},"tags":["ambiguous_variant","hindi_number","hinglish_unit"]}
+{"id":"t062","text":"Aloo Bhujia 200gm 4 Petti","gold":{"sku":"BHUJIA-200G","qty":4,"unit":"carton","status":"ok"},"tags":["hinglish_unit","size_variant"]}
+{"id":"t063","text":"maggi atta noodles 6 dzn","gold":{"sku":null,"qty":6,"unit":"dozen","status":"needs_review"},"tags":["not_in_catalogue"]}
+{"id":"t064","text":"kurkure masala munch 20rs 2ctn","gold":{"sku":"KURKURE-20","qty":2,"unit":"carton","status":"ok"},"tags":["glued","price_variant"]}
+{"id":"t065","text":"Aloo Bhujia 400gm 5 Ctn","gold":{"sku":"BHUJIA-400G","qty":5,"unit":"carton","status":"ok"},"tags":["size_variant"]}
+{"id":"t066","text":"good day cashew ₹30 2 ctn","gold":{"sku":"GDCASHEW-30","qty":2,"unit":"carton","status":"ok"},"tags":["price_variant"]}
+{"id":"t067","text":"Madhur Sugar 5kg 1 Bora","gold":{"sku":"MADHUR-5KG","qty":1,"unit":"bag","status":"ok"},"tags":["hinglish_unit","size_variant"]}
+{"id":"t068","text":"Paanch Carton Amul Ghee 500ml","gold":{"sku":"AMULGHEE-500ML","qty":5,"unit":"carton","status":"ok"},"tags":["hindi_number","size_variant","word_order"]}
+{"id":"t069","text":"HIDE AND SEK 10 WALA - 5 CTN","gold":{"sku":"HIDESEEK-10","qty":5,"unit":"carton","status":"ok"},"tags":["misspelling","price_variant"]}
+{"id":"t070","text":"patanjali dant kanti 2 ctn","gold":{"sku":null,"qty":2,"unit":"carton","status":"needs_review"},"tags":["not_in_catalogue"]}
+{"id":"t071","text":"6packet dark fantassy","gold":{"sku":null,"qty":6,"unit":"packet","status":"needs_review"},"tags":["ambiguous_variant","glued","misspelling","word_order"]}
+{"id":"t072","text":"wagh bakir chai 5 petti","gold":{"sku":null,"qty":5,"unit":"carton","status":"needs_review"},"tags":["ambiguous_variant","hindi_name","hinglish_unit","misspelling"]}
+{"id":"t073","text":"5 STAR 10 WALI 6 PETI","gold":{"sku":"FIVESTAR-10","qty":6,"unit":"carton","status":"ok"},"tags":["hinglish_unit","number_in_name","price_variant"]}
+{"id":"t074","text":"3 ctn aloo bhujia","gold":{"sku":null,"qty":3,"unit":"carton","status":"needs_review"},"tags":["ambiguous_variant","word_order"]}
+{"id":"t075","text":"rin 5pc","gold":{"sku":"RIN-10","qty":5,"unit":"piece","status":"ok"},"tags":["glued"]}
+{"id":"t076","text":"lifebuoy sabun ₹30 3 ctn","gold":{"sku":"LIFEBUOY-30","qty":3,"unit":"carton","status":"ok"},"tags":["hindi_name","price_variant"]}
+{"id":"t077","text":"tata arhar dal 5 box","gold":{"sku":"TOORDAL-1KG","qty":5,"unit":"carton","status":"ok"},"tags":["hindi_name"]}
+{"id":"t078","text":"five star 2 darjan","gold":{"sku":null,"qty":2,"unit":"dozen","status":"needs_review"},"tags":["ambiguous_variant","hindi_name","hinglish_unit"]}
+{"id":"t079","text":"Waagh Bakri Chai 750g 5","gold":{"sku":null,"qty":5,"unit":null,"status":"needs_review"},"tags":["hindi_name","missing_unit","misspelling","size_variant","variant_not_stocked"]}
+{"id":"t080","text":"COLGATE STRONG TEETH 100 GM 5 BOX","gold":{"sku":"COLGATE-100G","qty":5,"unit":"carton","status":"ok"},"tags":["size_variant"]}

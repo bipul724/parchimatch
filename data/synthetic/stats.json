@@ -1,0 +1,63 @@
+{
+  "seed": 2026,
+  "catalogue": 111,
+  "families": 61,
+  "dev": {
+    "n": 320,
+    "needsReview": 116,
+    "tags": {
+      "size_variant": 122,
+      "hinglish_unit": 101,
+      "price_variant": 86,
+      "misspelling": 80,
+      "ambiguous_variant": 61,
+      "hindi_name": 57,
+      "word_order": 36,
+      "unit_first": 31,
+      "hindi_number": 27,
+      "filler": 24,
+      "glued": 23,
+      "not_in_catalogue": 18,
+      "missing_unit": 14,
+      "brand_only": 14,
+      "missing_qty": 12,
+      "informal_size": 11,
+      "unknown_unit": 9,
+      "devanagari": 7,
+      "variant_not_stocked": 7,
+      "carton_size_unknown": 5,
+      "number_in_name": 5,
+      "informal_price": 3,
+      "colour_name": 3
+    }
+  },
+  "test": {
+    "n": 80,
+    "needsReview": 29,
+    "tags": {
+      "size_variant": 30,
+      "hinglish_unit": 24,
+      "price_variant": 23,
+      "misspelling": 22,
+      "hindi_name": 15,
+      "ambiguous_variant": 14,
+      "word_order": 8,
+      "hindi_number": 7,
+      "glued": 7,
+      "not_in_catalogue": 6,
+      "missing_unit": 4,
+      "filler": 4,
+      "unit_first": 3,
+      "variant_not_stocked": 3,
+      "brand_only": 3,
+      "number_in_name": 2,
+      "missing_qty": 1,
+      "devanagari": 1,
+      "informal_size": 1,
+      "carton_size_unknown": 1,
+      "informal_price": 1,
+      "informal_unit": 1,
+      "unknown_unit": 1
+    }
+  }
+}

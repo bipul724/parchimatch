@@ -1,0 +1,7 @@
+{
+  "created": "2026-10-13T07:37:53.891Z",
+  "seed": 2027,
+  "n": 80,
+  "sha256": "a0c35e0425c76dbd24abcfc8c88f50bce6b1948de4080b81ccd4a6d400db2ce4",
+  "source": "tools/gen-synthetic.ts"
+}
