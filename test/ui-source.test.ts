@@ -20,7 +20,7 @@ function renderHarness() {
     return nodes.get(id);
   } };
   const api = runInNewContext(`${source.slice(0, end)}\n({
-    renderRow, productOptions, resultText, canRemember, initialDecision, renderSummary, loadStatus,
+    renderRow, productOptions, resultText, baseText, canRemember, initialDecision, renderSummary, loadStatus,
     setCatalog(xs) { catalog = xs; bySku = new Map(xs.map(x => [x.sku, x])); },
     setRows(xs) { rows = xs; }, setMatching(value) { matching = value; }
   });`, {
@@ -97,4 +97,37 @@ test('UI Export stays disabled while matching or any amber decision remains unre
     api.renderSummary();
     assert.equal(nodes.get('export')?.disabled, disabled, `${states}/${matching}`);
   }
+});
+
+test('UI shows base quantities on green and confirmed rows and recomputes them from the current decision', () => {
+  const { api } = renderHarness();
+  api.setCatalog([
+    { sku: 'PRLG-5', label: 'Parle-G Biscuit (₹5 pack)', units: ['packet', 'carton'], unitsPerCarton: 144 },
+    { sku: 'KITKAT-10', label: 'KitKat (₹10 bar)', units: ['piece', 'dozen', 'carton'], unitsPerCarton: 240 },
+    { sku: 'CLINICPLUS-1', label: 'Clinic Plus Shampoo (₹1 sachet strip)', units: ['packet', 'carton'], unitsPerCarton: null },
+  ]);
+  const row = (sku: string, qty: number, unit: string, state = 'auto', server = {}) =>
+    itemRow({ text: 'x', status: 'ok', sku, qty, unit, ...server, decision: { state, sku, qty, unit } });
+  // Server values are used while the decision still matches the server's answer.
+  assert.match(api.renderRow(row('PRLG-5', 2, 'carton', 'auto', { baseQty: 288, baseUnit: 'packet' })), /2 carton<\/span> \(288 packets\)/);
+  // The operator changed the quantity, unit or product: recomputed from the catalogue.
+  const changed = row('PRLG-5', 2, 'carton', 'confirmed', { baseQty: 288, baseUnit: 'packet' });
+  changed.decision.qty = 3;
+  assert.match(api.renderRow(changed), /3 carton<\/span> \(432 packets\)/);
+  assert.match(api.renderRow(row('KITKAT-10', 4, 'dozen', 'confirmed')), /4 dozen<\/span> \(48 pieces\)/);
+  assert.match(api.renderRow(row('KITKAT-10', 1, 'carton', 'confirmed')), /1 carton<\/span> \(240 pieces\)/);
+  assert.match(api.renderRow(row('CLINICPLUS-1', 2, 'carton', 'confirmed')), /2 carton<\/span> \(carton size unknown\)/);
+  // Same unit as ordered: nothing to convert, so nothing extra is shown.
+  assert.doesNotMatch(api.renderRow(row('PRLG-5', 3, 'packet')), /\(\d+ packets?\)/);
+  // Pending (amber) rows keep their own carton warning instead.
+  assert.doesNotMatch(api.renderRow(row('PRLG-5', 2, 'carton', 'pending')), /288 packets/);
+  assert.equal(api.baseText({ sku: 'PRLG-5', qty: 1, unit: 'carton' }), ' (144 packets)');
+  assert.equal(api.baseText({ sku: 'KITKAT-10', qty: null, unit: 'dozen' }), '');
+});
+
+test('UI base quantity text is escaped', () => {
+  const { api } = renderHarness();
+  api.setCatalog([{ sku: 'X', label: 'x', units: ['carton', attack], unitsPerCarton: 2 }]);
+  const html = api.renderRow(itemRow({ text: 'x', sku: 'X', decision: { state: 'auto', sku: 'X', qty: 1, unit: 'carton' }, baseQty: 2, baseUnit: attack }));
+  assert.equal(html.includes('<img'), false);
 });

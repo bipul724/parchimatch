@@ -29,6 +29,8 @@ export interface Row {
   nameKnown: boolean; // the catalogue already knows this name; the problem is the variant or quantity, so nothing to learn
   candidates: Candidate[];
   ms: number | null; // model time for this line
+  baseQty: number | null; // what the export's base_qty will be ("2 carton" → 288); null if unknown, e.g. carton size missing
+  baseUnit: string | null; // the unit baseQty counts ("packet"); null without a product and unit
 }
 
 export function itemLabel(item: CatalogItem): string {
@@ -66,7 +68,7 @@ export async function matchLine(line: number, text: string, ctx: Ctx, learned: M
 
   // "Ram Ram bhaiya", "Total bata dena": no number and nothing in the catalogue resembles it.
   if (!forceItem && !learnedSku && !parsed.pairs.length && parsed.unit === null && !parsed.tokens.some((token) => /[0-9]/.test(token)) && (ranked[0]?.score ?? 0) < 0.3) {
-    return { ...base, kind: 'note', source: 'none', status: 'needs_review', sku: null, qty: null, unit: null, reasons: ['looks like a note, not an item'], question: '', candidates: [], ms: null };
+    return { ...base, kind: 'note', source: 'none', status: 'needs_review', sku: null, qty: null, unit: null, reasons: ['looks like a note, not an item'], question: '', candidates: [], ms: null, baseQty: null, baseUnit: null };
   }
 
   let prediction: Prediction;
@@ -92,6 +94,7 @@ export async function matchLine(line: number, text: string, ctx: Ctx, learned: M
       candidates.push({ sku: item.sku, label: itemLabel(item) });
     }
   }
+  const item = prediction.sku ? ctx.index.get(prediction.sku) : undefined;
   return {
     ...base,
     kind: 'item',
@@ -104,6 +107,8 @@ export async function matchLine(line: number, text: string, ctx: Ctx, learned: M
     question: prediction.question ?? '',
     candidates,
     ms,
+    baseQty: item ? baseQuantity(prediction, item) : null,
+    baseUnit: item && prediction.unit ? baseUnit(item, prediction.unit) : null,
   };
 }
 

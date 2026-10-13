@@ -86,12 +86,28 @@ function unitOptions(sku, selected) {
   return units.map((u) => `<option value="${u}"${u === selected ? ' selected' : ''}>${UNIT_LABEL[u]}</option>`).join('');
 }
 
-function resultText(d) {
+// "2 carton (288 packets)": the export's base quantity, shown before exporting. The server's values are used
+// while the decision still matches its answer; after an edit it is recomputed the same way as baseUnit() in src/review.ts.
+function baseText(d, r) {
+  const item = bySku.get(d.sku);
+  if (!item || d.qty == null || (d.unit !== 'carton' && d.unit !== 'dozen')) return '';
+  let qty;
+  let unit;
+  if (r && r.baseUnit != null && d.sku === r.sku && d.qty === r.qty && d.unit === r.unit) ({ baseQty: qty, baseUnit: unit } = r);
+  else {
+    unit = d.unit === 'dozen' ? 'piece' : item.units.find((u) => u !== 'carton' && u !== 'dozen') ?? 'unit';
+    qty = d.unit === 'dozen' ? d.qty * 12 : item.unitsPerCarton == null ? null : d.qty * item.unitsPerCarton;
+  }
+  if (qty == null) return ' (carton size unknown)';
+  return ` (${esc(qty)} ${esc(unit)}${qty === 1 ? '' : 's'})`;
+}
+
+function resultText(d, r) {
   const item = bySku.get(d.sku);
   if (!item) return '<span class="muted">—</span>';
   const qty = d.qty == null ? '?' : d.qty;
   const unit = d.unit ? UNIT_LABEL[d.unit] : '?';
-  return `<span class="qty">${esc(qty)} ${esc(unit)}</span> · ${esc(item.label)}`;
+  return `<span class="qty">${esc(qty)} ${esc(unit)}</span>${baseText(d, r)} · ${esc(item.label)}`;
 }
 
 function sourceBadge(r) {
@@ -133,7 +149,7 @@ function renderRow(r) {
       </div>`;
   }
 
-  const result = d.state === 'pending' ? `<span class="muted">${d.sku ? 'Suggestion: ' + esc(bySku.get(d.sku)?.label ?? '') : 'No confident match'}</span>` : d.state === 'ignored' ? '<span class="muted">Ignored</span>' : d.state === 'skipped' ? '<span class="muted">Skipped</span>' : resultText(d);
+  const result = d.state === 'pending' ? `<span class="muted">${d.sku ? 'Suggestion: ' + esc(bySku.get(d.sku)?.label ?? '') : 'No confident match'}</span>` : d.state === 'ignored' ? '<span class="muted">Ignored</span>' : d.state === 'skipped' ? '<span class="muted">Skipped</span>' : resultText(d, r);
 
   return `<div class="row ${cls}" data-line="${r.line}">
     <div class="line"><span class="num">${r.line}</span><span class="text">${esc(r.text)}</span><span class="result">${result}</span><span class="right">${right}</span></div>

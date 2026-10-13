@@ -119,3 +119,17 @@ test('CSV formula injection is neutralised in every exported text column includi
     assert.equal(parsed[1].reviewer_note, "'" + dangerous);
   }
 });
+
+test('review rows carry base quantities: carton→packet, dozen→piece, unknown carton size, and none without a full answer', async () => {
+  const base = async (text: string) => {
+    const r = await matchLine(1, text, ctx, new Map(), false);
+    return [r.status, r.sku, r.qty, r.unit, r.baseQty, r.baseUnit];
+  };
+  assert.deepEqual(await base('parle g 5/- 2 petti'), ['ok', 'PRLG-5', 2, 'carton', 288, 'packet']);
+  assert.deepEqual(await base('5 star 10 wala 2 dozen'), ['ok', 'FIVESTAR-10', 2, 'dozen', 24, 'piece']);
+  assert.deepEqual(await base('maggi 3 pkt'), ['ok', 'MAGGI-70G', 3, 'packet', 3, 'packet']);
+  // S15 keeps this amber; the suggestion's base quantity is unknown, so the export would leave it blank.
+  assert.deepEqual(await base('clinic plus 1 rs 2 petti'), ['needs_review', 'CLINICPLUS-1', 2, 'carton', null, 'packet']);
+  assert.deepEqual(await base('maggi bhej dena'), ['needs_review', 'MAGGI-70G', null, null, null, null]);
+  assert.deepEqual(await base('Ram Ram bhaiya'), ['needs_review', null, null, null, null, null]);
+});
