@@ -1,0 +1,33 @@
+sku,name,brand,variant,mrp,sell_units,units_per_carton,aliases
+PRLG-5,Parle-G Biscuit,Parle,₹5 pack,5,packet|carton,144,parle g
+PRLG-10,Parle-G Biscuit,Parle,₹10 pack,10,packet|carton,72,parle g
+PRLG-20,Parle-G Biscuit,Parle,₹20 pack,20,packet|carton,36,parle g
+MONACO-10,Monaco Biscuit,Parle,₹10 pack,10,packet|carton,60,monaco
+GOODDAY-10,Good Day Cashew Biscuit,Britannia,₹10 pack,10,packet|carton,60,good day
+MARIE-10,Marie Gold Biscuit,Britannia,₹10 pack,10,packet|carton,60,marie gold|marie
+MAGGI-14,Maggi Masala Noodles,Nestle,70 g single,14,packet|carton,96,maggi
+MAGGI-4P,Maggi Masala Noodles 4-Pack,Nestle,280 g,56,packet|carton,24,maggi 4 pack
+TATASALT-1,Tata Salt,Tata,1 kg,28,packet|carton,25,tata salt
+AASH-5,Aashirvaad Atta,ITC,5 kg,260,bag,,aashirvaad atta|aashirvaad
+AASH-10,Aashirvaad Atta,ITC,10 kg,495,bag,,aashirvaad atta|aashirvaad
+FORT-1L,Fortune Soyabean Oil,Fortune,1 L pouch,155,piece|carton,12,fortune oil|fortune
+FORT-5L,Fortune Soyabean Oil,Fortune,5 L jar,760,piece,,fortune oil|fortune
+SURF-10,Surf Excel Easy Wash,HUL,₹10 sachet,10,packet|carton,108,surf excel|surf
+SURF-1KG,Surf Excel Easy Wash,HUL,1 kg,140,packet|carton,12,surf excel|surf
+GHADI-1KG,Ghadi Detergent Powder,RSPL,1 kg,70,packet|carton,20,ghadi
+VIM-10,Vim Dishwash Bar,HUL,₹10 bar,10,piece|carton,90,vim bar|vim
+COLG-100,Colgate Strong Teeth,Colgate,100 g,60,piece|dozen|carton,72,colgate
+COLG-200,Colgate Strong Teeth,Colgate,200 g,110,piece|dozen|carton,36,colgate
+LUX-10,Lux Soap,HUL,₹10 bar,10,piece|dozen|carton,144,lux
+CLINIC-1,Clinic Plus Shampoo Sachet,HUL,₹1 sachet strip,1,packet|carton,,clinic plus
+DMILK-10,Dairy Milk,Cadbury,₹10 bar,10,piece|dozen|carton,,dairy milk|cadbury dairy milk
+DMILK-20,Dairy Milk,Cadbury,₹20 bar,20,piece|dozen|carton,,dairy milk|cadbury dairy milk
+LAYS-MAG-10,Lay's India's Magic Masala,PepsiCo,₹10 pack,10,packet|carton,48,lays magic masala
+LAYS-CRM-10,Lay's American Cream & Onion,PepsiCo,₹10 pack,10,packet|carton,48,lays cream onion|lays cream and onion
+LAYS-CLS-10,Lay's Classic Salted,PepsiCo,₹10 pack,10,packet|carton,48,lays classic salted|lays salted
+KURK-10,Kurkure Masala Munch,PepsiCo,₹10 pack,10,packet|carton,48,kurkure
+FROOTI-10,Frooti Mango Drink,Parle Agro,₹10 tetra pack,10,piece|carton,40,frooti
+TATATEA-250,Tata Tea Premium,Tata,250 g,145,packet|carton,40,tata tea premium|tata tea
+REDLABEL-250,Brooke Bond Red Label,HUL,250 g,150,packet|carton,40,red label
+HALD-BHU-200,Haldiram's Aloo Bhujia,Haldiram's,200 g,55,packet|carton,30,haldiram aloo bhujia|aloo bhujia
+AMUL-BTR-100,Amul Butter,Amul,100 g,60,piece|carton,50,amul butter
