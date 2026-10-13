@@ -1,5 +1,7 @@
 # Server and Ollama test findings
 
+> **Update (13 Oct 2026, after the coding-agent tasks A1/A2):** **C01 is fixed.** Commas between digits no longer split a line; well-formed groupings (`1,500`, `1,00,000`) are read as one number, and unclear ones (`1,5`) are asked about by the new rule S16. The fix also closed a related critical bug: `aashirvaad atta 10 kg 1,500 bag` used to go green as **1 bag**. **HTTP-08 is fixed:** without `--catalog`, the app reuses the catalogue uploaded in the app. C02 (`maggi, 4 pack 1 ctn`) remains a known limitation. Suite: 170 tests.
+
 All requests use a temporary catalogue/data directory and a scriptable Ollama stub on loopback. No real model or locked evaluation set was used. Final application children and the stub bind port 0; child processes, timers, connections, and temporary files are cleaned up.
 
 ## Reproduced bugs

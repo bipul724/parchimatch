@@ -23,7 +23,7 @@ Someone retypes every line into Tally, Busy or Marg. ParchiMatch Lite reads each
 
 ## Highlights
 
-- **Safety first.** Code reads every quantity, unit, price and pack size. The local model only picks *which product*, and 15 rules check its pick ([RULES.md](docs/RULES.md)). On the locked synthetic test, no method let a wrong row through.
+- **Safety first.** Code reads every quantity, unit, price and pack size. The local model only picks *which product*, and 16 rules check its pick ([RULES.md](docs/RULES.md)). On the locked synthetic test, no method let a wrong row through.
 - **Hybrid matching.** Fuzzy text matching handles most lines instantly. The model (Gemma 4 E2B via Ollama, chosen in a [5-model bake-off](docs/EVALUATION.md#model-bake-off)) is asked only when fuzzy can't name the product: 31 of 80 test lines, about 2 s each.
 - **Learns the shop's shorthand.** Correct "lais peela" once, tick *Remember*, and it matches automatically next time. No training needed.
 - **Hinglish and Devanagari.** `petti`, `darjan`, `nag`, `bora`, `do petti`, `5 wala`, `10 ka`, `पारले जी 5 वाला 2 पेटी`.
@@ -69,7 +69,7 @@ Full setup, auto-start and offline checks: [DEPLOY.md](docs/DEPLOY.md).
 flowchart LR
   A["Order line"] --> B["parse()<br/>qty · unit · price · size"]
   B --> C{"Fuzzy match<br/>confident?"}
-  C -- yes --> V["15 safety rules"]
+  C -- yes --> V["16 safety rules"]
   C -- no --> M["Local model picks<br/>from top 8 or abstains"]
   M --> V
   V -- all pass --> G["🟩 auto"]
@@ -124,7 +124,7 @@ Gitignored, because they may hold shop data: `data/real/`, `data/app/`, `data/tr
 
 - Evaluated on **synthetic** data only. No real shop has used it yet.
 - One shop, one operator, one order at a time. Pasted text only: no photos, voice or WhatsApp integration.
-- Comma splitting can break items that contain commas ("1,000 pcs").
+- A comma inside an item's description splits it into two rows ("maggi, 4 pack 1 ctn"). Commas inside numbers ("1,500 bag", "1,00,000") are kept and read; unclear ones ("1,5") are asked about.
 - Known security items to fix are listed in [SECURITY.md](SECURITY.md#known-issues).
 
 ## License

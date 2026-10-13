@@ -17,7 +17,7 @@ If fine-tuning is used, it's a one-time step on a cloud service and should use *
 | Asset | Threat | Mitigation |
 |---|---|---|
 | Customer list, prices, order volume | Leaking to a third party | Local-only design (above) |
-| Invoice correctness | A wrong row exported to billing | 15 safety rules, server-side re-check of confirmed rows, evaluation with "dangerous rows" as the key metric ([RULES.md](docs/RULES.md)) |
+| Invoice correctness | A wrong row exported to billing | 16 safety rules, server-side re-check of confirmed rows, evaluation with "dangerous rows" as the key metric ([RULES.md](docs/RULES.md)) |
 | Learned names | Poisoned by a mistaken correction | Only explicitly confirmed rows with "Remember" ticked; known catalogue names can't be learned; later entries override earlier ones; plain CSV can be edited |
 | Local server | Another program on the same computer calling the API | Accepted risk for a single-user desktop tool. There's no authentication; don't run untrusted software on the shop PC |
 | Review page | Script injection through order text | Every order-derived string is HTML-escaped before display |

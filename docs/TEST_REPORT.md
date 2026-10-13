@@ -1,5 +1,7 @@
 # ParchiMatch Lite test audit
 
+> **Update (13 Oct 2026, after the coding-agent tasks A1/A2):** **C01 is fixed.** Commas between digits no longer split a line; well-formed groupings (`1,500`, `1,00,000`) are read as one number, and unclear ones (`1,5`) are asked about by the new rule S16. The fix also closed a related critical bug: `aashirvaad atta 10 kg 1,500 bag` used to go green as **1 bag**. **HTTP-08 is fixed:** without `--catalog`, the app reuses the catalogue uploaded in the app. C02 (`maggi, 4 pack 1 ctn`) remains a known limitation. Suite: 170 tests.
+
 > **Update:** a follow-up review found and fixed one regression from this pass; the suite is now **152 tests**. See [Review of this pass](#review-of-this-pass-and-one-follow-up-fix-13-oct-2026).
 
 Final result: **149 tests passed, 0 failed, 0 skipped, 0 todo**, under **Node v24.3.0**, in **3.074 seconds** (Node runner duration; shell command wall time 3.119 seconds). The original 28-test suite passed before additions. This pass added 11 test files and one Ollama helper, plus temporary-directory cleanup in an existing test. There are **25 fixed findings and 3 documented open/ambiguous behaviours** below; three finalizer findings and the stale-map guard are explicitly marked as caller-boundary issues rather than reachable model-number exploits.

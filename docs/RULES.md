@@ -29,10 +29,11 @@ A line is **green** only if every rule passes. Otherwise it's **amber**, with th
 | S13 | If no unit is written: fill it in only when the item is sold in exactly one unit | "aashirvaad 5kg 2" → bag | packet or carton? |
 | S14 | The unit must be one the item is sold in | "fortune 5 litre 1 petti" | … is sold by piece. Which one? |
 | S15 | Cartons need a known carton size | "clinic plus 2 petti" | How many in one carton of …? |
+| S16 | A comma between digits that isn't a well-formed grouping is never read as a number | "maggi **1,5** pkt" (1.5? 15? 1 and 5?) | What does "1,5" mean? |
 
 **Fuzzy acceptance** (`src/methods.ts`): the top match is accepted only if its score is ≥ 0.5 **and** it leads the runner-up by ≥ 0.08. It then still passes through all safety rules.
 
-**Hybrid** (the app's method): fuzzy first; the model is called only when fuzzy can't name a product. A model pick then goes through S1–S15.
+**Hybrid** (the app's method): fuzzy first; the model is called only when fuzzy can't name a product. A model pick then goes through S1–S16.
 
 **Notes:** a line with no digits after normalization, no parsed quantity+unit pair, and no parsed unit whose best fuzzy score is under 0.3 is shown as a grey note ("Ram Ram bhaiya") and never exported. Numeric orders, including supported non-ASCII digits, and Hindi number+unit orders remain item rows even when the product name is unfamiliar. The operator can override with "Treat as item".
 
@@ -43,7 +44,7 @@ A line is **green** only if every rule passes. Otherwise it's **amber**, with th
 | L1 | Only names the catalogue doesn't already know can be learned. The checkbox is hidden for known names, and the server refuses them too | "tata tea premium" was amber because the **size** was missing; learning it would auto-accept the wrong size forever |
 | L2 | A learned name means the **product** (all variants with the same catalogue name), not one pack size | "lais peela" learned from a ₹10 line must still match "lais peela 20 rs" to the ₹20 pack |
 | L3 | Price/size written in the order pick the variant; if they can't, ask (with the learned variant as suggestion) | "lais peela 3 ctn" stays amber |
-| L4 | Learned names still pass every safety rule | A learned name can't bypass S5–S15 |
+| L4 | Learned names still pass every safety rule | A learned name can't bypass S5–S16 |
 | L5 | Learned names are only saved from rows the operator explicitly confirmed with the box ticked | Skipped or automatic rows never teach anything |
 
 ## 4. Reading rules (`src/text.ts` → `parse()`)
@@ -51,6 +52,8 @@ A line is **green** only if every rule passes. Otherwise it's **amber**, with th
 Applied in this order:
 
 1. **Normalise:** lowercase, NFKC (including full-width digits), Devanagari/Gujarati/Bengali digits → ASCII, Devanagari unit words → Latin (`पेटी` → petti), `₹` → rs, `5/-` → `5 rs`, split glued numbers (`5kg` → `5 kg`), strip punctuation. Decimal points and negative number signs survive so S11 can reject negative quantities. Zero-width formatting marks inside numeric text are removed to preserve the whole number, sign, and decimal. `2-ctn` and `ctn-2` remain separators; `rs.10` becomes `rs 10`.
+
+   **Numbers with commas:** a well-formed grouping becomes one number before punctuation is stripped: Western (`1,000`, `12,500`, `1,250,000`) and Indian (`1,00,000`, `12,34,567`). A grouping must not touch another digit, decimal or comma-digit on either side. Any other comma between digits (`1,5`, `2,50`, `1,0000`, `1,000.5`) stays one token. It is never a quantity, price or size, and neither is the unit, price or size word right after it. It's recorded as `unclearNumber`, removed from the product text, and S16 asks. Order splitting never breaks a line at a comma with a digit on both sides.
 2. **Price:** a number followed by `rs / rupees / wala / wali / vala …`, then `rs` followed by a number. Prices are MRP hints, never quantities. All explicit hints are retained; different prices require review.
 3. **Pack size:** a number followed by `kg / kilo / g / gm / gram / l / ltr / litre / ml`. Sizes are variant hints, never quantities. All explicit sizes are retained; conflicting values or dimensions require review.
 4. **Quantity + unit:** a unit word with a number directly before it (digits or a Hindi number word), or digits directly after it (`ctn 2`).

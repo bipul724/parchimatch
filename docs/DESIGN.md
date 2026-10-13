@@ -116,6 +116,6 @@ On the locked 80-line synthetic test (current code, Gemma 4 E2B): hybrid 88.2% w
 
 - Evaluated on **synthetic** data written by the same author as the system. Real orders will contain shorthand the generator never produces.
 - One shop, one user, one order at a time.
-- Comma splitting can break items that contain commas ("1,000 pcs").
+- A comma inside an item's description splits it into two rows ("maggi, 4 pack 1 ctn"). Commas inside numbers ("1,500 bag", "1,00,000") are kept and read; unclear ones ("1,5") are asked about.
 - Brand-new shorthand the model doesn't know (pack colours like "hara") needs one correction before it's learned.
 - No authentication: anything on the same computer can reach the local server.

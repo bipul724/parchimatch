@@ -17,14 +17,14 @@ Repository: `https://github.com/bipul724/parchimatch` (MIT). Public site (static
 ```
 order text → splitOrder → parse (code reads every number) → fuzzy match
    → confident? ── yes ──────────────────────────────┐
-   → no → local model picks a product from top 8 ───→ finalize(): 15 safety rules → green / amber
+   → no → local model picks a product from top 8 ───→ finalize(): 16 safety rules → green / amber
 ```
 
 - **Parser** (`src/text.ts`): price hints (`5/-`, `10 wala`, `rs 20`), pack sizes (`10 kilo`, `250 gm`), quantity+unit pairs (`2 petti`, `ek petti`, `ctn 2`), Hindi number words (only directly before a unit), Devanagari, unknown unit words, and numbers inside catalogue names (`5 star`).
 - **Fuzzy matching** (`src/retrieve.ts`): trigram + word cover, ±0.15 price/size boosts. Accept if score ≥ 0.5 and lead ≥ 0.08.
 - **Hybrid** (`src/methods.ts`): the model is called only when fuzzy can't name the product (about 1 in 3 lines).
 - **Model** (`src/prompt.ts`, `src/llm.ts`): Ollama `/api/chat`, JSON schema `{evidence, sku, status}`, temperature 0, thinking off, 2048 context, one repair retry, cancellation.
-- **Safety rules** (`src/validate.ts`, listed in `docs/RULES.md`): S1–S15. Examples: a written price must equal the MRP; a written size must match the variant; code resolves quantities; unknown unit words are never guessed; cartons need a known carton size; a model pick auto-accepts only if the order's own words favour it by ≥ 0.08 over every other candidate.
+- **Safety rules** (`src/validate.ts`, listed in `docs/RULES.md`): S1–S16. Examples: a written price must equal the MRP; a written size must match the variant; code resolves quantities; unknown unit words and unclear commas (`1,5`) are never guessed; cartons need a known carton size; a model pick auto-accepts only if the order's own words favour it by ≥ 0.08 over every other candidate.
 - **Learning** (`src/learned.ts`, `src/review.ts`): the operator can save a new name ("lais peela" = Lay's Classic Salted). It maps to the product family, not one pack size. Names the catalogue already knows are never learned.
 - **App** (`src/server.ts`, `app/`): Node `node:http` on 127.0.0.1:5178, NDJSON streaming rows, vanilla HTML/JS review page, CSV export with base quantities and formula-safe cells.
 
@@ -61,7 +61,7 @@ TypeScript run directly by **Node 24** (type stripping), **zero npm dependencies
 | **hybrid · gemma4:e2b-it-qat** | **88.2%** | **0** | **92.2%** | **43.8%** | **31** | **2.2 / 2.8 s** |
 | hybrid · qwen3.5:4b (previous) | 86.3% | 0 | 92.2% | 45.0% | 31 | 5.1 / 6.7 s (under swap) |
 
-Plus: 152 automated tests; an adversarial run (a fake model making random picks over 320 practice lines, 1,265 calls) let 0 wrong rows through.
+Plus: 170 automated tests; an adversarial run (a fake model making random picks over 320 practice lines, 1,265 calls) let 0 wrong rows through.
 
 **The data is synthetic.** `tools/gen-synthetic.ts` (seed 2026) generated a 111-item catalogue (61 families), 320 practice lines (`data/synthetic/dev.jsonl`) and 80 locked test lines (`data/synthetic/test.jsonl`, sha256 `a0c35e04…`). No real shop has used the tool yet. See `data/synthetic/DATA_CARD.md`.
 
@@ -76,8 +76,7 @@ Plus: 152 automated tests; an adversarial run (a fake model making random picks 
 
 ## Known limitations / open items
 
-- A comma inside an item splits the line (`maggi 1,000 pcs`; task A1). `maggi, 4 pack 1 ctn` is a known limitation.
-- An uploaded catalogue isn't reused on restart without `--catalog` (task A2).
+- A comma inside an item's description splits it into two rows (`maggi, 4 pack 1 ctn`). Commas inside numbers are handled (`1,500`, `1,00,000`; unclear ones like `1,5` are asked about; fixed in A1).
 - A misspelled name containing a number (`5 sttar`) is asked about (task A6, blocked).
 - No real-browser click-through since the test pass (U1), no human-written test set yet (A4/U2/C8), no real shop.
 - The local server has no authentication (single-user desktop tool by design).
@@ -88,7 +87,7 @@ Plus: 152 automated tests; an adversarial run (a fake model making random picks 
 |---|---|
 | `src/` | Pipeline, server, harness |
 | `app/` | Review UI |
-| `test/` | 152 tests; `test/helpers/ollama-stub.ts`; `test/evidence/` (audit trail) |
+| `test/` | 170 tests; `test/helpers/ollama-stub.ts`; `test/evidence/` (audit trail) |
 | `data/synthetic/`, `data/fixture/` | Benchmark data (synthetic) |
 | `tools/gen-synthetic.ts` | Data generator |
 | `docs/` | Architecture, API, design, rules, deploy, data formats, evaluation, troubleshooting, test report, manual checklist |

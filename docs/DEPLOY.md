@@ -43,13 +43,13 @@ There's nothing to `npm install`: the project has no dependencies.
 npm start -- --catalog data/real/catalog.csv
 ```
 
-Open <http://127.0.0.1:5178>. Options are in [API.md](API.md#http-api). To try it first with the synthetic shop, use `--catalog data/synthetic/catalog.csv`.
+Open <http://127.0.0.1:5178>. Options are in [API.md](API.md#http-api). To try it first with the synthetic shop, use `--catalog data/synthetic/catalog.csv`. Started without `--catalog`, it loads the catalogue last uploaded in the app, or the synthetic one if nothing was uploaded ([rule](API.md#http-api)).
 
 ## Set up a real shop
 
 1. **Export the item list** from the billing software as CSV or Excel.
 2. **Convert it** to the [catalogue format](DATA_FORMATS.md#catalogue-csv): one row per sellable variant, `sell_units`, `units_per_carton` where known, and only the aliases the shop actually writes.
-3. **Load it**, either with `--catalog data/real/catalog.csv` at start or via *Catalogue → Replace catalogue* in the app. Invalid rows are reported by row number, and nothing is replaced until the file is valid.
+3. **Load it**, either with `--catalog data/real/catalog.csv` at start or via *Catalogue → Replace catalogue* in the app. Invalid rows are reported by row number, and nothing is replaced until the file is valid. An uploaded catalogue is saved to `data/app/catalog.csv` and loads again after a restart, as long as you start **without** `--catalog`; an explicit `--catalog` always wins. The startup line says which file loaded and why.
 4. **Run a few real orders.** Correct amber rows and tick "Remember" for the shop's own nicknames.
 
 `data/real/` and `data/app/` are gitignored, so shop data is never committed.

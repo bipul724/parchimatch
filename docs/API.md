@@ -10,7 +10,7 @@ npm start -- --catalog data/synthetic/catalog.csv
 
 | Flag | Default | Meaning |
 |---|---|---|
-| `--catalog` | `data/synthetic/catalog.csv` | Catalogue CSV to load at start ([format](DATA_FORMATS.md#catalogue-csv)) |
+| `--catalog` | see below | Catalogue CSV to load at start ([format](DATA_FORMATS.md#catalogue-csv)). An explicit flag always wins |
 | `--port` | `5178` | Port on 127.0.0.1; `0` asks the OS for a free port, printed at startup |
 | `--data` | `data/app` | Writable folder for learned names, uploaded catalogue and exports |
 | `--samples` | `data/synthetic/orders` | Folder of `*.txt` sample orders shown in the UI |
@@ -18,6 +18,8 @@ npm start -- --catalog data/synthetic/catalog.csv
 | `--url` | `http://127.0.0.1:11434` | Ollama base URL |
 
 Paths are resolved relative to the project folder.
+
+**Which catalogue loads at start:** `--catalog` if given. Otherwise `<data>/catalog.csv`, the last catalogue uploaded in the app, if it exists, is valid and has at least one item. Otherwise `data/synthetic/catalog.csv`. If a saved upload can't be used, the server prints a warning with the validation errors and loads the default; it doesn't crash. The startup line names the file and the reason, e.g. `catalogue 111 items (data/app/catalog.csv · uploaded in the app)`. An invalid file passed with `--catalog` still stops the server with its errors.
 
 ---
 
