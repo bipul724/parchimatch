@@ -141,6 +141,14 @@ The synthetic generator encodes one author's idea of shorthand. The cheapest ind
 2. Ask each to type the order as they'd really WhatsApp it to a supplier. Show no examples.
 3. Label their lines, lock them as `data/human/test.jsonl`, and run every method once.
 
+To label: save the lines as plain text, one order line per line (e.g. `data/human/raw.txt`), then run
+
+```bash
+npm run label -- --catalog data/synthetic/catalog.csv --in data/human/raw.txt --out data/human/labelled.jsonl
+```
+
+It shows the parsed quantity/unit and fuzzy's top 5 candidates, and asks for the product (a number, a SKU, or `n` for needs review / not stocked), the quantity and unit **as ordered**, whether a careful person could enter the line without asking (only when product, quantity and unit are all known; otherwise it's `needs_review`), and tags. Each answer is saved at once in the [labelled JSONL format](DATA_FORMATS.md#labelled-order-lines-jsonl), with ids from the input line numbers (`h007`). Running the same command again skips lines already labelled; if a labelled line's text no longer matches the input, it stops. It never writes into `data/synthetic/` or a file with a `.lock.json`.
+
 ## Commands
 
 | Command | Purpose |
@@ -148,6 +156,7 @@ The synthetic generator encodes one author's idea of shorthand. The cheapest ind
 | `npm test` | Unit and integration tests |
 | `npm run eval:baselines` | exact + fuzzy on the fixture |
 | `npm run eval -- --catalog … --cases … --methods exact,fuzzy,hybrid,llm-cand --label …` | Full comparison |
+| `npm run label -- --catalog … --in … --out …` | Label human-written order lines (resumable) |
 | `npm run split -- --in … --test 30` | Lock a held-out test set |
 | `npm run check-leak -- --test … --candidate …` | Near-duplicate check |
 | `npm run export-train -- …` | Fine-tuning data |

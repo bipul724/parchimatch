@@ -40,8 +40,12 @@ There's nothing to `npm install`: the project has no dependencies.
 ## Run
 
 ```bash
-npm start -- --catalog data/real/catalog.csv
+npm run app -- --open
 ```
+
+One command: it checks Node (24+), whether Ollama is running and whether the model is downloaded, then starts the app and, with `--open`, opens it in the browser. Nothing is downloaded. If Ollama is stopped or the model is missing, it says so (printing the exact `ollama pull …` command) and starts with fuzzy matching only; once Ollama and the model are there, the app uses them without a restart. Stop it with Ctrl+C.
+
+Other flags go to the server unchanged, e.g. `npm run app -- --catalog data/real/catalog.csv`. `npm start` still starts the server alone, without the checks.
 
 Open <http://127.0.0.1:5178>. Options are in [API.md](API.md#http-api). To try it first with the synthetic shop, use `--catalog data/synthetic/catalog.csv`. Started without `--catalog`, it loads the catalogue last uploaded in the app, or the synthetic one if nothing was uploaded ([rule](API.md#http-api)).
 

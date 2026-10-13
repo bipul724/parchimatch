@@ -56,10 +56,10 @@ ollama pull gemma4:e2b-it-qat
 npm test
 ```
 ```bash
-npm start -- --catalog data/synthetic/catalog.csv
+npm run app -- --open
 ```
 
-Open <http://127.0.0.1:5178>, pick **Sample order 03**, and click **Match order**. Confirm or skip the amber lines, then **Export CSV**. The file is also saved in `data/app/exports/`.
+It checks Node, Ollama and the model (printing the `ollama pull` command if the model is missing; it never downloads anything), starts the app, and opens <http://127.0.0.1:5178>. Without Ollama it starts with fuzzy matching only. Pick **Sample order 03** and click **Match order**. Confirm or skip the amber lines, then **Export CSV**. The file is also saved in `data/app/exports/`.
 
 Full setup, auto-start and offline checks: [DEPLOY.md](docs/DEPLOY.md).
 
@@ -85,6 +85,14 @@ npm run eval -- --catalog data/synthetic/catalog.csv --cases data/synthetic/test
 ```
 
 Results go to `results/` (every row with reasons, a per-tag breakdown, and a running `summary.md`). To evaluate on a real shop's data, lock a test set first: [EVALUATION.md](docs/EVALUATION.md).
+
+To label order lines written by other people (one per line in a text file) for a human-written test set:
+
+```bash
+npm run label -- --catalog data/synthetic/catalog.csv --in data/human/raw.txt --out data/human/labelled.jsonl
+```
+
+For each line it shows the parsed quantity and unit and the five closest products, then asks for the product, quantity, unit, whether a careful person could enter it without asking, and tags. It saves after every line and continues where it stopped. It refuses to write into `data/synthetic/` or a locked file.
 
 ## Documentation
 
