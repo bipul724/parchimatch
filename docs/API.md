@@ -17,7 +17,7 @@ npm start -- --catalog data/synthetic/catalog.csv
 | `--model` | `gemma4:e2b-it-qat` | Ollama model name (`qwen3.5:2b-q4_K_M` is a faster, smaller alternative) |
 | `--url` | `http://127.0.0.1:11434` | Ollama base URL |
 
-Paths are resolved relative to the project folder.
+Paths are resolved relative to the project folder. A flag above written without a value (`--catalog` at the end, or followed by another flag) stops the server with a one-line message such as `--catalog needs a value, e.g. --catalog data/real/catalog.csv` and exit code 1. `--port` must be a whole number from 0 to 65535. `npm run eval` checks `--catalog`, `--cases`, `--model`, `--url`, `--out` and `--label` the same way; switches such as `--think` and `--allow-changed-test` need no value.
 
 **Which catalogue loads at start:** `--catalog` if given. Otherwise `<data>/catalog.csv`, the last catalogue uploaded in the app, if it exists, is valid and has at least one item. Otherwise `data/synthetic/catalog.csv`. If a saved upload can't be used, the server prints a warning with the validation errors and loads the default; it doesn't crash. The startup line names the file and the reason, e.g. `catalogue 111 items (data/app/catalog.csv · uploaded in the app)`. An invalid file passed with `--catalog` still stops the server with its errors.
 
@@ -51,7 +51,7 @@ Request:
 | Status | Body |
 |---|---|
 | 200 | `{ "ok": true, "items": 111 }` (saved to `<data>/catalog.csv`; learned names are re-validated against it) |
-| 400 | `{ "ok": false, "error": "Catalogue … has problems:\n  row 3: unknown unit \"box\"" }` |
+| 400 | `{ "ok": false, "error": "Catalogue … has problems:\n  row 3: unknown unit \"box\"" }`. A CSV with no item rows (header only, or empty) is rejected with `catalogue has no items` |
 
 ## `GET /api/samples`
 
@@ -108,6 +108,8 @@ Stream:
 | `nameKnown` | boolean | The catalogue already knows these words; nothing new to learn |
 | `candidates` | `{sku,label}[]` | Suggestion first, then the closest matches |
 | `ms` | number \| null | Model time for this line, if the model was called |
+| `baseQty` | number \| null | What the export's `base_qty` will be for this row's product, quantity and unit ("2 carton" of a 144-per-carton item → 288). For an amber row it describes the suggestion. `null` without a product or quantity, or when a carton's size is unknown |
+| `baseUnit` | string \| null | The unit `baseQty` counts: `piece` for dozens, the item's loose unit for cartons (`packet`, `piece`…), otherwise the ordered unit. `null` without a product and unit |
 
 | Status | When |
 |---|---|

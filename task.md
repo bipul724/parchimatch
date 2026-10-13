@@ -15,7 +15,7 @@ The working task list for ParchiMatch Lite. Read [context.md](context.md) first.
 
 ## Code tasks (coding agent)
 
-**Order of work for the coding agent (decided 13 Oct):** A7 → A8 → A3 → A5 → A4. A7 and A8 are small correctness fixes; A3 and A5 matter most for the demo; A4 feeds the human-written test set.
+**Order of work for the coding agent (decided 13 Oct):** A7 → A8 → A3 → A5 → A4 (all done 13 Oct) → **A9 next**. A7 and A8 are small correctness fixes; A3 and A5 matter most for the demo; A4 feeds the human-written test set.
 
 ### A1. Numbers with commas: never split, read correctly, never guess: `done` (critical, revised 13 Oct)
 **Review (Claude, 13 Oct):** accepted. 170/170 tests; acceptance lines verified through the pipeline (`1,500 bag` → green 1500 bag; `1,5` → amber S16; `1,00,000` → amber S11; comma-separated items still split). Old-vs-new on all 440 practice/fixture/test lines × exact+fuzzy: **0 outcomes changed**. Locked test hash unchanged.
@@ -52,7 +52,8 @@ The working task list for ParchiMatch Lite. Read [context.md](context.md) first.
 - An invalid saved upload falls back with a logged warning instead of crashing.
 - `docs/API.md` (flag table) and `docs/DEPLOY.md` describe the rule.
 
-### A3. Show base quantities in green rows: `todo`
+### A3. Show base quantities in green rows: `done`
+**Review (Claude, 13 Oct):** accepted. Server rows checked live: `parle g 5/- 2 petti` → 288 packet, `3 dozen` → 36 piece, `fortune oil 5 litre 2 carton` → null (carton size unknown). In the browser, green rows show "2 carton (288 packets)", and changing the quantity to 3 recalculates to 432. Matching is unchanged (the change only adds fields), so no old-vs-new run was needed.
 **Why:** the operator should see "2 carton (288 packets)" before exporting, not only in the CSV.
 **Do:** add `baseQty` and `baseUnit` to the review row (server side, reusing `baseQuantity`/`baseUnit` from `src/validate.ts` and `src/review.ts`). Show them in `app/app.js` for green and confirmed rows. Recompute in the UI when the operator changes qty, unit or product (needs `unitsPerCarton` from `/api/catalog`, already sent).
 **Done when:**
@@ -60,7 +61,8 @@ The working task list for ParchiMatch Lite. Read [context.md](context.md) first.
 - Every value goes through `esc()`.
 - `docs/API.md` lists the new row fields.
 
-### A4. Labelling helper for a human-written test set: `todo`
+### A4. Labelling helper for a human-written test set: `done` (two changes moved to A9)
+**Review (Claude, 13 Oct):** accepted. A piped run checked live: ids follow input line numbers (blank lines skipped), a typed SKU works, a stop and rerun resumes, and `--out data/synthetic/…` is refused. **Decisions:** (1) keep the extra "could a careful person enter this?" question, but with **no default**. A stray Enter must not label a line `ok`, because a wrong `ok` makes the system's misses look safe. (2) Reduce anchoring: show **8** candidates (the same k the model sees), **sorted by name, without scores**, and say this in EVALUATION.md. Both are in A9.
 **Why:** the most valuable missing evidence is order lines written by people other than the author ([EVALUATION.md](docs/EVALUATION.md#recommended-next-measurement-a-human-written-test-set)).
 **Do:** `src/label.ts` + `npm run label -- --catalog <csv> --in <raw.txt> --out <labelled.jsonl>`. It reads one order line per line of the input and, for each line, shows fuzzy's top 5 candidates and the parsed qty/unit. It then asks in the terminal (`node:readline`) for: product number (or `n` = needs review / not stocked), quantity, unit, and tags. It writes the [labelled JSONL format](docs/DATA_FORMATS.md#labelled-order-lines-jsonl). It must be resumable: it skips ids already in `--out`.
 **Done when:**
@@ -68,7 +70,8 @@ The working task list for ParchiMatch Lite. Read [context.md](context.md) first.
 - It never writes into `data/synthetic/`.
 - The README and `docs/EVALUATION.md` mention the command.
 
-### A5. One-command start script: `todo`
+### A5. One-command start script: `done`
+**Review (Claude, 13 Oct):** accepted. Checked live with Ollama running ("Model … is ready") and with Ollama unreachable (fuzzy-only message; `/api/status` reports `modelReady:false`). It downloads nothing. `--open` has not been tried with a real browser; U1 covers it.
 **Why:** a shopkeeper (or the demo) should start everything with one command.
 **Do:** `npm run app` → `src/start.ts`. It:
 1. checks Node ≥ 24;
@@ -83,7 +86,8 @@ The working task list for ParchiMatch Lite. Read [context.md](context.md) first.
 - `docs/DEPLOY.md` and the README Quick start use it.
 - It has no dependencies.
 
-### A7. Reject catalogues with no items: `todo`
+### A7. Reject catalogues with no items: `done`
+**Review (Claude, 13 Oct):** accepted. A header-only upload returns 400 `catalogue has no items` and the 111-item catalogue stays loaded (checked live). The startup special case in `server.ts` was folded into `loadCatalog`.
 **Why:** `POST /api/catalog` accepts a header-only CSV with 0 items, which replaces a working catalogue with an empty one. Startup already treats such a file as unusable (A2).
 **Do:** in `loadCatalog()` (`src/catalog.ts`), add an error when there are no data rows (`catalogue has no items`), reported like the other row-level errors. That covers upload, startup and the eval harness in one place.
 **Done when:**
@@ -91,12 +95,31 @@ The working task list for ParchiMatch Lite. Read [context.md](context.md) first.
 - A unit test covers `loadCatalog` with a header-only file.
 - `docs/API.md` (POST /api/catalog errors) and `docs/DATA_FORMATS.md` (catalogue rules) mention it.
 
-### A8. Clear error for flags given without a value: `todo`
+### A8. Clear error for flags given without a value: `done` (eval follow-up in A9)
+**Review (Claude, 13 Oct):** accepted for the server and the listed eval flags. Gap found: eval's numeric flags still turn into `1` silently. `npm run eval -- --limit` scored **1 case** with no warning, and a valueless `--min-score` would mean fuzzy accepts nothing. That can quietly change reported numbers, so it's fixed in A9.
 **Why:** `npm start -- --catalog` with no value turns into the path `"true"` and crashes with a confusing file error.
 **Do:** in `src/server.ts` (and `src/eval.ts`, which has the same pattern), path/text flags (`--catalog`, `--data`, `--samples`, `--model`, `--url`, `--port`; in eval also `--cases`, `--out`, `--label`) given without a value must exit with `--catalog needs a value, e.g. --catalog data/real/catalog.csv` (per flag) and a non-zero code. Leave boolean flags (`--think`, `--allow-changed-test`) alone. `--port` must be a whole number 0–65535.
 **Done when:**
 - Spawned-process tests cover a valueless `--catalog` and a non-numeric `--port` (clear message, non-zero exit, no stack trace).
 - `docs/API.md` notes it.
+
+### A9. Follow-ups from the A4/A8 review: `todo`
+**Do:**
+1. **`src/eval.ts`:** `--methods`, `--limit`, `--k`, `--min-score`, `--min-margin`, `--ctx` and `--show` without a value fail like the other flags (`missingValue`). Values must also be valid, or eval exits 1 with a one-line message:
+   - `--limit`, `--k`, `--ctx`: whole number ≥ 1;
+   - `--show`: whole number ≥ 0;
+   - `--min-score`, `--min-margin`: a number from 0 to 1.
+2. **`src/label.ts`, status question:** no default. The prompt becomes `[y/n]`, and Enter asks again.
+3. **`src/label.ts`, candidates:** show 8 candidates (from `retrieve(…, 8)`), sorted by `itemLabel`, without scores. The number typed still picks from that displayed list.
+4. **Docs:**
+   - `docs/API.md`: the eval flag sentence.
+   - README and `docs/EVALUATION.md`: replace "five closest" / "top 5" with eight, alphabetical, no scores. Add one sentence: the list is drawn from fuzzy's candidates, so a labeller can still be anchored, and any SKU can be typed.
+
+**Done when:**
+- Spawned-process tests cover `--limit` with no value, `--k 0` and `--min-score 2`.
+- The label tests cover Enter on the status question asking again, and the 8 sorted candidates without scores.
+- `npm test` passes.
+- The locked hash is unchanged.
 
 ### A6. Misspelled product names that contain a number: `blocked`
 **Why:** `5 sttar 20 wala 5box` is now asked about instead of matched.
@@ -111,8 +134,8 @@ The working task list for ParchiMatch Lite. Read [context.md](context.md) first.
 | C1 | Model bake-off on practice lines; choose default model | done: Gemma 4 E2B (see context.md) |
 | C2 | Confirm the chosen model once on the locked test set; update all docs, site and README numbers | done: hybrid 88.2% / 0 dangerous / 2.2 s |
 | C3 | Update the landing site (`site/`) for the model change and new numbers; check every claim in `site/CLAIMS.md` | done: results, index, get-started, FAQ, CLAIMS updated; bake-off section added; canonical/OG/sitemap URLs set to GitHub Pages |
-| C4 | Review each agent task: read the diff, run `npm test`, run dev-set exact/fuzzy/hybrid, check docs, then `done` or send back | ongoing |
-| C5 | After A1–A3 land: one final locked-test run (exact, fuzzy, hybrid) and the final numbers everywhere | todo |
+| C4 | Review each agent task: read the diff, run `npm test`, run dev-set exact/fuzzy/hybrid, check docs, then `done` or send back | ongoing: A1–A5, A7, A8 done; A9 next |
+| C5 | After A9 lands: one final locked-test run (exact, fuzzy, hybrid) and the final numbers everywhere, including the test count (site says 170; now 186) | todo |
 | C6 | Decide A6 using dev-set evidence only | todo |
 | C7 | Draft the DEV post as an unpublished draft (only on your yes) | todo |
 | C8 | Score and lock the human-written test set when it arrives (after A4) | todo |

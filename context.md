@@ -1,6 +1,6 @@
 # Context
 
-Everything an agent or collaborator needs to work on ParchiMatch Lite without re-reading the whole history. **Last updated: 13 Oct 2026 (late evening IST), written as a handoff before a context compaction.** Tasks live in [task.md](task.md). If this file and the code disagree, the code wins, so fix this file.
+Everything an agent or collaborator needs to work on ParchiMatch Lite without re-reading the whole history. **Last updated: 13 Oct 2026 (night IST), after the A7/A8/A3/A5/A4 review.** Tasks live in [task.md](task.md). If this file and the code disagree, the code wins, so fix this file.
 
 ---
 
@@ -10,9 +10,9 @@ Everything an agent or collaborator needs to work on ParchiMatch Lite without re
 |---|---|
 | Deadline | **Mon 19 Oct 2026, 12:29 PM IST** (= Sun 18 Oct 11:59 PM PDT). Target publish **Sat 17 Oct**. |
 | Challenge | DEV Hacktoberfest 2026 Open-Source AI Challenge, **Week 2 "Side Hustle"** (challenge id 80). Tag `#hf26challenge` + `#devchallenge`. Writing quality is weighted most. The owner is registered for Week 2. |
-| Repo | `https://github.com/bipul724/parchimatch`, branch `main`, **26 commits, all pushed**. HEAD = `ec1b7b8 docs: update rules, limitations, site and task list after A1/A2 review`. |
-| Uncommitted work | Coding agent's **A7** (status `review`) and **A8** (status `doing`): `src/catalog.ts`, `src/server.ts`, `test/catalog-more.test.ts`, `test/e2e-server.test.ts`, `docs/API.md`, `docs/DATA_FORMATS.md`, `task.md`. **Not reviewed yet.** |
-| Tests | `npm test` → **171 pass, 0 fail** (Node 24.3.0) at snapshot time, including the agent's in-progress A7/A8 changes. |
+| Repo | `https://github.com/bipul724/parchimatch`, branch `main`. HEAD = `5b11d4e docs: detailed handoff in context.md` (pushed). |
+| Uncommitted work | Coding agent's **A7, A8, A3, A5, A4**: all **reviewed and accepted by Claude on 13 Oct** and waiting for the owner to commit. New files: `src/start.ts` (`npm run app`), `src/label.ts` (`npm run label`), `test/cli-flags.test.ts`, `test/start.test.ts`, `test/label.test.ts`. |
+| Tests | `npm test` → **186 pass, 0 fail** (Node 24.3.0). |
 | Locked test set | `data/synthetic/test.jsonl` unchanged (sha256 `a0c35e04…`, lock file `test.jsonl.lock.json`). |
 | Default model | `gemma4:e2b-it-qat` (since the 13 Oct bake-off). Pulled locally: gemma4:e2b-it-qat, gemma4:e4b-it-qat, gemma3:4b, qwen3.5:2b-q4_K_M, qwen3.5:4b-q4_K_M. |
 | Site | `site/` (static, 7 pages) + `.github/workflows/pages.yml`. GitHub Pages is **not enabled yet** (owner task U4). Canonical URLs point to `https://bipul724.github.io/parchimatch/`. |
@@ -20,12 +20,12 @@ Everything an agent or collaborator needs to work on ParchiMatch Lite without re
 | Human-written test set | Not collected yet (U2 → A4 → C8). |
 
 **Immediate next steps:**
-1. Review the agent's A7 report when the owner pastes it (procedure in §5).
-2. Then A8, A3, A5, A4 in that order.
-3. After A3: final locked-test run (C5), then update the numbers everywhere.
+1. The owner commits the reviewed A7/A8/A3/A5/A4 batch.
+2. The coding agent does **A9** (eval numeric-flag checks; labeller: status question with no default, and 8 alphabetical candidates without scores). Claude reviews it.
+3. After A9: final locked-test run (C5), then update the numbers everywhere, including the test count (site says 170).
 4. Decide A6 on dev evidence only (C6).
 5. Draft the DEV post as an unpublished draft (C7), only on the owner's yes.
-6. Remind the owner of U1 (browser checklist), U2 (friends' orders), U3 (demo video), U4 (GitHub Pages).
+6. Remind the owner of U1 (browser checklist, which also covers `--open` and the base quantities), U2 (friends' orders), U3 (demo video), U4 (GitHub Pages).
 
 ---
 
@@ -89,7 +89,7 @@ order text → splitOrder → parse (code reads every number) → fuzzy match
 
 **Loop:** agent works a task → owner pastes the handoff report → Claude reviews and decides → Claude updates `task.md` and docs → owner commits the reviewed batch → the agent continues.
 
-**Current agent work order (decided 13 Oct):** **A7 → A8 → A3 → A5 → A4.** A6 is blocked (Claude decides on dev evidence).
+**Agent work order:** A7 → A8 → A3 → A5 → A4 were all done on 13 Oct; **A9 is next**. A6 is blocked (Claude decides on dev evidence).
 
 ## 5. How Claude reviews an agent task (procedure that worked)
 
