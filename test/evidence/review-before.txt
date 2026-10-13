@@ -1,0 +1,74 @@
+✔ L1 known catalogue names cannot become new names merely because a variant is missing (13.705208ms)
+✔ L2 learned name selects the whole product family, including a different written price (1.283791ms)
+✔ L3 learned name requires a variant hint and respects a written pack size (1.413167ms)
+✔ L4 learned names still reject wrong prices, unknown units, and implausible quantities (1.530667ms)
+✖ removed learned SKU is ignored by both disk loading and direct matching (1.806166ms)
+✔ CSV preserves commas, quotes, CR/newlines and Devanagari while keeping skipped rows (0.269167ms)
+✖ CSV quotes a field containing only a carriage return separator (0.448583ms)
+✖ CSV formula injection is neutralised in every exported text column including skipped rows (0.240083ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 5
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 124.816959
+
+✖ failing tests:
+
+test at test/review-more.test.ts:53:1
+✖ removed learned SKU is ignored by both disk loading and direct matching (1.806166ms)
+  TypeError [Error]: Cannot read properties of undefined (reading 'name')
+      at file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/src/review.ts:47:65
+      at Array.filter (<anonymous>)
+      at learnedVariant (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/src/review.ts:47:28)
+      at matchLine (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/src/review.ts:75:18)
+      at TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/review-more.test.ts:59:21)
+      at Test.runInAsyncScope (node:async_hooks:214:14)
+      at Test.run (node:internal/test_runner/test:1062:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:752:18)
+      at Test.postRun (node:internal/test_runner/test:1191:19)
+      at Test.run (node:internal/test_runner/test:1119:12)
+
+test at test/review-more.test.ts:80:1
+✖ CSV quotes a field containing only a carriage return separator (0.448583ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  2 !== 1
+  
+      at TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/review-more.test.ts:82:10)
+      at Test.runInAsyncScope (node:async_hooks:214:14)
+      at Test.run (node:internal/test_runner/test:1062:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:752:18)
+      at Test.postRun (node:internal/test_runner/test:1191:19)
+      at Test.run (node:internal/test_runner/test:1119:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 2,
+    expected: 1,
+    operator: 'strictEqual'
+  }
+
+test at test/review-more.test.ts:86:1
+✖ CSV formula injection is neutralised in every exported text column including skipped rows (0.240083ms)
+  AssertionError [ERR_ASSERTION]: order_text: =HYPERLINK("http://x","click")
+  + actual - expected
+  
+  + '=HYPERLINK("http://x","click")'
+  - `'=HYPERLINK("http://x","click")`
+  
+      at TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/review-more.test.ts:96:89)
+      at Test.runInAsyncScope (node:async_hooks:214:14)
+      at Test.run (node:internal/test_runner/test:1062:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:752:18)
+      at Test.postRun (node:internal/test_runner/test:1191:19)
+      at Test.run (node:internal/test_runner/test:1119:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: '=HYPERLINK("http://x","click")',
+    expected: `'=HYPERLINK("http://x","click")`,
+    operator: 'strictEqual'
+  }

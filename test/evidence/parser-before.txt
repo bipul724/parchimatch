@@ -1,0 +1,303 @@
+✔ parser table: atta 1.5 kg 2 bag (3.143834ms)
+✔ parser table: maggi x2 (0.323542ms)
+✔ parser table: maggi 2x (0.25625ms)
+✔ parser table: maggi 2-ctn (0.187583ms)
+✔ parser table: ctn-2 maggi (0.246209ms)
+✔ parser table: maggi 0 ctn (0.167833ms)
+✔ parser table: maggi 1000000000 ctn (0.1825ms)
+✔ parser table: maggi 2 ctn 5 pkt (0.156084ms)
+✔ parser table: maggi २ ctn (0.299709ms)
+✔ parser table: parle g Rs 10/- 2 pkt (0.131584ms)
+✔ parser table: parle g ₹ 10 2 pkt (0.071292ms)
+✔ parser table: MAGGI!!! 2ctn 🙏 (0.119417ms)
+✔ parser table: ctn 2 maggi (0.143291ms)
+✔ parser table: maggi bhej do (0.216417ms)
+✔ parser table: maggi ２ ctn (0.082625ms)
+✔ parser table: maggi 2​ctn (0.083084ms)
+✖ parser recognizes rs.10 as an explicit price marker (0.768083ms)
+✖ parser preserves a negative quantity for the plausibility check (0.219334ms)
+✖ parser retains Gujarati and Bengali digits even when mixed with Latin digits (0.138875ms)
+✖ parser retains conflicting explicit prices and sizes for validation (0.295958ms)
+✔ debatable syntax: half kilo stays literal and an unmarked 14 is not inferred as a price (0.082834ms)
+✔ normalization keeps full-width punctuation and repeated normalization stable (0.055583ms)
+✔ S1 decider unsure requires review and preserves its product suggestion (1.233584ms)
+✔ S2 invented catalogue SKU is rejected (0.128375ms)
+✔ S3 model SKU must occur in the candidates shown (0.141875ms)
+✔ S4 no product chosen requires a product question (0.076625ms)
+✔ S5 a written MRP must match the chosen variant (0.08ms)
+✔ S6 written pack size must match both dimension and value (0.128459ms)
+✔ S7 unresolved distinct quantity pairs require review (0.519084ms)
+✔ S8 model quantity and unit must agree with deterministic parsing (0.118583ms)
+✔ S9 model evidence must contain only words from the order (0.100875ms)
+✔ S10 model near-tie remains an amber suggestion (0.149625ms)
+✔ S11 quantity must be present, whole, and between 1 and 10000 (0.173875ms)
+✔ S12 unknown unit word is never guessed even for a single-unit product (0.088125ms)
+✔ S13 absent unit is filled only for a product sold in exactly one unit (0.092666ms)
+✔ S14 requested unit must be one the product is sold in (0.063625ms)
+✔ S15 carton orders need a known carton size (0.1215ms)
+✖ S7 a product number does not erase a different order unit (0.513291ms)
+✖ S7 a proposal cannot supply a quantity for unresolved pairs (0.110833ms)
+✖ S5 conflicting written prices require review instead of retaining the first (0.092458ms)
+✖ S6 conflicting written sizes require review instead of retaining the first (0.079625ms)
+✖ S6 a written size requires a verifiable catalogue variant size (0.460834ms)
+✖ S11 a written negative quantity is never converted to a positive order (0.11025ms)
+✖ S12 a model cannot invent a unit to bypass an unknown unit word (0.161833ms)
+✔ size-family mismatch for dettol soap cannot auto-accept a liquid pack size (1.240584ms)
+✔ real item words without digits still reach review rather than becoming notes (10.976625ms)
+✔ base quantities preserve carton and dozen conversions and unknown carton sizes (0.0855ms)
+ℹ tests 47
+ℹ suites 0
+ℹ pass 36
+ℹ fail 11
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 130.650583
+
+✖ failing tests:
+
+test at test/parse-more.test.ts:32:1
+✖ parser recognizes rs.10 as an explicit price marker (0.768083ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  null !== 10
+  
+      at TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/parse-more.test.ts:34:10)
+      at Test.runInAsyncScope (node:async_hooks:214:14)
+      at Test.run (node:internal/test_runner/test:1062:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:752:18)
+      at Test.postRun (node:internal/test_runner/test:1191:19)
+      at Test.run (node:internal/test_runner/test:1119:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: null,
+    expected: 10,
+    operator: 'strictEqual'
+  }
+
+test at test/parse-more.test.ts:38:1
+✖ parser preserves a negative quantity for the plausibility check (0.219334ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  2 !== -2
+  
+      at TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/parse-more.test.ts:39:10)
+      at Test.runInAsyncScope (node:async_hooks:214:14)
+      at Test.run (node:internal/test_runner/test:1062:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:752:18)
+      at Test.postRun (node:internal/test_runner/test:1191:19)
+      at Test.run (node:internal/test_runner/test:1119:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 2,
+    expected: -2,
+    operator: 'strictEqual'
+  }
+
+test at test/parse-more.test.ts:42:1
+✖ parser retains Gujarati and Bengali digits even when mixed with Latin digits (0.138875ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  null !== 2
+  
+      at TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/parse-more.test.ts:44:12)
+      at Test.runInAsyncScope (node:async_hooks:214:14)
+      at Test.run (node:internal/test_runner/test:1062:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:752:18)
+      at Test.postRun (node:internal/test_runner/test:1191:19)
+      at Test.run (node:internal/test_runner/test:1119:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: null,
+    expected: 2,
+    operator: 'strictEqual'
+  }
+
+test at test/parse-more.test.ts:49:1
+✖ parser retains conflicting explicit prices and sizes for validation (0.295958ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + undefined
+  - [
+  -   5,
+  -   10
+  - ]
+  
+      at TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/parse-more.test.ts:50:10)
+      at Test.runInAsyncScope (node:async_hooks:214:14)
+      at Test.run (node:internal/test_runner/test:1062:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:752:18)
+      at Test.postRun (node:internal/test_runner/test:1191:19)
+      at Test.run (node:internal/test_runner/test:1119:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: [ 5, 10 ],
+    operator: 'deepStrictEqual'
+  }
+
+test at test/rules.test.ts:92:1
+✖ S7 a product number does not erase a different order unit (0.513291ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'ok'
+  - 'needs_review'
+  
+      at review (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/rules.test.ts:19:10)
+      at TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/rules.test.ts:93:3)
+      at Test.runInAsyncScope (node:async_hooks:214:14)
+      at Test.run (node:internal/test_runner/test:1062:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:752:18)
+      at Test.postRun (node:internal/test_runner/test:1191:19)
+      at Test.run (node:internal/test_runner/test:1119:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'ok',
+    expected: 'needs_review',
+    operator: 'strictEqual'
+  }
+
+test at test/rules.test.ts:95:1
+✖ S7 a proposal cannot supply a quantity for unresolved pairs (0.110833ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'ok'
+  - 'needs_review'
+  
+      at review (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/rules.test.ts:19:10)
+      at TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/rules.test.ts:96:3)
+      at Test.runInAsyncScope (node:async_hooks:214:14)
+      at Test.run (node:internal/test_runner/test:1062:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:752:18)
+      at Test.postRun (node:internal/test_runner/test:1191:19)
+      at Test.run (node:internal/test_runner/test:1119:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'ok',
+    expected: 'needs_review',
+    operator: 'strictEqual'
+  }
+
+test at test/rules.test.ts:98:1
+✖ S5 conflicting written prices require review instead of retaining the first (0.092458ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'ok'
+  - 'needs_review'
+  
+      at review (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/rules.test.ts:19:10)
+      at TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/rules.test.ts:99:3)
+      at Test.runInAsyncScope (node:async_hooks:214:14)
+      at Test.run (node:internal/test_runner/test:1062:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:752:18)
+      at Test.postRun (node:internal/test_runner/test:1191:19)
+      at Test.run (node:internal/test_runner/test:1119:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'ok',
+    expected: 'needs_review',
+    operator: 'strictEqual'
+  }
+
+test at test/rules.test.ts:101:1
+✖ S6 conflicting written sizes require review instead of retaining the first (0.079625ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'ok'
+  - 'needs_review'
+  
+      at review (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/rules.test.ts:19:10)
+      at TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/rules.test.ts:102:3)
+      at Test.runInAsyncScope (node:async_hooks:214:14)
+      at Test.run (node:internal/test_runner/test:1062:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:752:18)
+      at Test.postRun (node:internal/test_runner/test:1191:19)
+      at Test.run (node:internal/test_runner/test:1119:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'ok',
+    expected: 'needs_review',
+    operator: 'strictEqual'
+  }
+
+test at test/rules.test.ts:104:1
+✖ S6 a written size requires a verifiable catalogue variant size (0.460834ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'ok'
+  - 'needs_review'
+  
+      at review (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/rules.test.ts:19:10)
+      at TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/rules.test.ts:105:3)
+      at Test.runInAsyncScope (node:async_hooks:214:14)
+      at Test.run (node:internal/test_runner/test:1062:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:752:18)
+      at Test.postRun (node:internal/test_runner/test:1191:19)
+      at Test.run (node:internal/test_runner/test:1119:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'ok',
+    expected: 'needs_review',
+    operator: 'strictEqual'
+  }
+
+test at test/rules.test.ts:107:1
+✖ S11 a written negative quantity is never converted to a positive order (0.11025ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'ok'
+  - 'needs_review'
+  
+      at review (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/rules.test.ts:19:10)
+      at TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/rules.test.ts:108:3)
+      at Test.runInAsyncScope (node:async_hooks:214:14)
+      at Test.run (node:internal/test_runner/test:1062:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:752:18)
+      at Test.postRun (node:internal/test_runner/test:1191:19)
+      at Test.run (node:internal/test_runner/test:1119:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'ok',
+    expected: 'needs_review',
+    operator: 'strictEqual'
+  }
+
+test at test/rules.test.ts:110:1
+✖ S12 a model cannot invent a unit to bypass an unknown unit word (0.161833ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'ok'
+  - 'needs_review'
+  
+      at review (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/rules.test.ts:19:10)
+      at TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/rules.test.ts:111:3)
+      at Test.runInAsyncScope (node:async_hooks:214:14)
+      at Test.run (node:internal/test_runner/test:1062:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:752:18)
+      at Test.postRun (node:internal/test_runner/test:1191:19)
+      at Test.run (node:internal/test_runner/test:1119:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'ok',
+    expected: 'needs_review',
+    operator: 'strictEqual'
+  }

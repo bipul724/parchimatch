@@ -1,0 +1,100 @@
+✔ parser table: atta 1.5 kg 2 bag (1.286375ms)
+✔ parser table: maggi x2 (0.110958ms)
+✔ parser table: maggi 2x (0.082209ms)
+✔ parser table: maggi 2-ctn (0.11625ms)
+✔ parser table: ctn-2 maggi (0.0905ms)
+✔ parser table: maggi 0 ctn (0.057042ms)
+✔ parser table: maggi 1000000000 ctn (0.05625ms)
+✔ parser table: maggi 2 ctn 5 pkt (0.053209ms)
+✔ parser table: maggi २ ctn (0.253959ms)
+✔ parser table: parle g Rs 10/- 2 pkt (0.112791ms)
+✔ parser table: parle g ₹ 10 2 pkt (0.100167ms)
+✔ parser table: MAGGI!!! 2ctn 🙏 (0.062584ms)
+✔ parser table: ctn 2 maggi (0.055083ms)
+✔ parser table: maggi bhej do (0.046208ms)
+✔ parser table: maggi ２ ctn (0.050709ms)
+✔ parser table: maggi 2​ctn (0.038958ms)
+✔ parser recognizes rs.10 as an explicit price marker (0.065625ms)
+✔ parser preserves a negative quantity for the plausibility check (0.056375ms)
+✔ parser retains Gujarati and Bengali digits even when mixed with Latin digits (0.089541ms)
+✔ parser retains conflicting explicit prices and sizes for validation (0.080875ms)
+✔ debatable syntax: half kilo stays literal and an unmarked 14 is not inferred as a price (0.064583ms)
+✔ normalization keeps full-width punctuation and repeated normalization stable (0.070458ms)
+✔ zero-width formatting inside numeric text never truncates quantity, sign, or decimal (0.193333ms)
+✖ unknown numeric unit phrase survives beside a recognised quantity pair (0.493542ms)
+✔ S1 decider unsure requires review and preserves its product suggestion (1.3875ms)
+✔ S2 invented catalogue SKU is rejected (0.21025ms)
+✔ S3 model SKU must occur in the candidates shown (0.183917ms)
+✔ S4 no product chosen requires a product question (0.10625ms)
+✔ S5 a written MRP must match the chosen variant (0.25825ms)
+✔ S6 written pack size must match both dimension and value (0.342333ms)
+✔ S7 unresolved distinct quantity pairs require review (0.791125ms)
+✔ S8 model quantity and unit must agree with deterministic parsing (0.187333ms)
+✔ S9 model evidence must contain only words from the order (0.120625ms)
+✔ S10 model near-tie remains an amber suggestion (0.174625ms)
+✔ S11 quantity must be present, whole, and between 1 and 10000 (0.568209ms)
+✔ S12 unknown unit word is never guessed even for a single-unit product (0.161334ms)
+✔ S13 absent unit is filled only for a product sold in exactly one unit (0.109875ms)
+✔ S14 requested unit must be one the product is sold in (0.078166ms)
+✔ S15 carton orders need a known carton size (0.1715ms)
+✔ S7 a product number does not erase a different order unit (0.465208ms)
+✔ S7 a proposal cannot supply a quantity for unresolved pairs (0.101167ms)
+✔ S5 conflicting written prices require review instead of retaining the first (0.072167ms)
+✔ S6 conflicting written sizes require review instead of retaining the first (0.063042ms)
+✔ S6 a written size requires a verifiable catalogue variant size (0.048458ms)
+✔ S11 a written negative quantity is never converted to a positive order (0.044291ms)
+✔ S12 a model cannot invent a unit to bypass an unknown unit word (0.058917ms)
+✖ S12 a known quantity pair cannot hide another quantity with an unknown unit (3.474125ms)
+✔ S8 a written price cannot be reused as a model supplied quantity (0.055875ms)
+✔ size-family mismatch for dettol soap cannot auto-accept a liquid pack size (0.55175ms)
+✔ real item words without digits still reach review rather than becoming notes (10.116083ms)
+✔ base quantities preserve carton and dozen conversions and unknown carton sizes (0.092542ms)
+ℹ tests 51
+ℹ suites 0
+ℹ pass 49
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 130.608125
+
+✖ failing tests:
+
+test at test/parse-more.test.ts:79:1
+✖ unknown numeric unit phrase survives beside a recognised quantity pair (0.493542ms)
+  AssertionError [ERR_ASSERTION]: maggi 2 ctn 5 jodi
+  
+  null !== 'jodi'
+  
+      at TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/parse-more.test.ts:82:12)
+      at Test.runInAsyncScope (node:async_hooks:214:14)
+      at Test.run (node:internal/test_runner/test:1062:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:752:18)
+      at Test.postRun (node:internal/test_runner/test:1191:19)
+      at Test.run (node:internal/test_runner/test:1119:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: null,
+    expected: 'jodi',
+    operator: 'strictEqual'
+  }
+
+test at test/rules.test.ts:114:1
+✖ S12 a known quantity pair cannot hide another quantity with an unknown unit (3.474125ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'ok'
+  - 'needs_review'
+  
+      at review (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/rules.test.ts:19:10)
+      at TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/rules.test.ts:120:7)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'ok',
+    expected: 'needs_review',
+    operator: 'strictEqual'
+  }

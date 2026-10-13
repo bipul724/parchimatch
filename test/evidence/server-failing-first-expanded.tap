@@ -1,0 +1,499 @@
+✖ server --port 0 reports the actual listening port (193.934792ms)
+✔ status, static assets, samples, and NDJSON comma splitting have documented shapes (124.964458ms)
+✔ status and matching fall back safely when Ollama is down or model is unavailable (214.875458ms)
+✔ model path rejects wrong prices, outside candidates, near ties, invalid JSON twice, and HTTP 500 (39.967208ms)
+✔ invalid JSON repair and unsupported think fallback are exercised against the stub (3.454083ms)
+✔ concurrent matching returns 409 and busy resets after completion (258.3085ms)
+✖ concurrent request bodies cannot both acquire the matching slot (345.328792ms)
+✖ client disconnect cancels remaining matching lines and promptly releases busy (95.761542ms)
+✔ confirm rejects unknown products, units, zero, fractions, and excessive quantities (18.093375ms)
+✖ confirm exports base quantities, keeps skipped rows, and persists each export separately (5.206583ms)
+✔ L1 known catalogue names cannot be learned through confirm (1.644709ms)
+✖ L5 remember requires an explicitly confirmed matching row and name (1.677666ms)
+✔ learned names survive restart and select price/size variants, but ask without either (131.467666ms)
+✔ catalogue replacement validates first, rolls back errors, and safely ignores removed learned SKUs (9.900125ms)
+▶ malformed JSON and invalid request shapes return 400 without crashing
+  ✖ /api/match malformed JSON (0.553583ms)
+  ✖ /api/match: null (1.173166ms)
+  ✖ /api/match: [] (1.231833ms)
+  ✖ /api/match: {} (1.156584ms)
+  ✖ /api/match: {"rows":null,"lines":4,"csv":5} (1.224084ms)
+  ✖ /api/match: {"rows":[null],"lines":[null]} (1.189834ms)
+  ✖ /api/confirm malformed JSON (1.439292ms)
+  ✖ /api/confirm: null (0.684709ms)
+  ✖ /api/confirm: [] (0.70125ms)
+  ✖ /api/confirm: {} (0.653958ms)
+  ✖ /api/confirm: {"rows":null,"lines":4,"csv":5} (0.563542ms)
+  ✖ /api/confirm: {"rows":[null],"lines":[null]} (0.557667ms)
+  ✖ /api/catalog malformed JSON (0.458875ms)
+  ✖ /api/catalog: null (0.649791ms)
+  ✖ /api/catalog: [] (0.775709ms)
+  ✖ /api/catalog: {} (0.716708ms)
+  ✖ /api/catalog: {"rows":null,"lines":4,"csv":5} (0.694625ms)
+  ✖ /api/catalog: {"rows":[null],"lines":[null]} (0.594334ms)
+✖ malformed JSON and invalid request shapes return 400 without crashing (16.842333ms)
+✖ oversized match and catalogue bodies return 413 with content type (7.460292ms)
+✖ unknown routes, wrong methods, and traversal paths never expose project files (6002.354959ms)
+ℹ tests 35
+ℹ suites 0
+ℹ pass 9
+ℹ fail 26
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 7597.284916
+
+✖ failing tests:
+
+test at test/e2e-server.test.ts:95:1
+✖ server --port 0 reports the actual listening port (193.934792ms)
+  AssertionError [ERR_ASSERTION]: Expected "actual" to be strictly unequal to: '0'
+      at TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/e2e-server.test.ts:98:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:332:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '0',
+    expected: '0',
+    operator: 'notStrictEqual'
+  }
+
+test at test/e2e-server.test.ts:205:1
+✖ concurrent request bodies cannot both acquire the matching slot (345.328792ms)
+  AssertionError [ERR_ASSERTION]: slot must be checked after awaiting a request body
+  
+  200 !== 409
+  
+      at TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/e2e-server.test.ts:219:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 200,
+    expected: 409,
+    operator: 'strictEqual'
+  }
+
+test at test/e2e-server.test.ts:222:1
+✖ client disconnect cancels remaining matching lines and promptly releases busy (95.761542ms)
+  AssertionError [ERR_ASSERTION]: disconnected work must release busy without waiting for slow Ollama
+  
+  409 !== 200
+  
+      at TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/e2e-server.test.ts:233:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 409,
+    expected: 200,
+    operator: 'strictEqual'
+  }
+
+test at test/e2e-server.test.ts:247:1
+✖ confirm exports base quantities, keeps skipped rows, and persists each export separately (5.206583ms)
+  AssertionError [ERR_ASSERTION]: two exports within a second must not overwrite an earlier order
+      at TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/e2e-server.test.ts:261:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: '/var/folders/cz/k82yzd9s27585xby3j5bh_k40000gn/T/parchimatch-server-0Mu0CZ/data/exports/order-2026-10-13T08-29-45.csv',
+    expected: '/var/folders/cz/k82yzd9s27585xby3j5bh_k40000gn/T/parchimatch-server-0Mu0CZ/data/exports/order-2026-10-13T08-29-45.csv',
+    operator: 'notStrictEqual'
+  }
+
+test at test/e2e-server.test.ts:271:1
+✖ L5 remember requires an explicitly confirmed matching row and name (1.677666ms)
+  AssertionError [ERR_ASSERTION]: ghost alias
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/e2e-server.test.ts:279:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual'
+  }
+
+test at test/e2e-server.test.ts:319:13
+✖ /api/match malformed JSON (0.553583ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  500 !== 400
+  
+      at TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/e2e-server.test.ts:321:14)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/e2e-server.test.ts:319:5)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 500,
+    expected: 400,
+    operator: 'strictEqual'
+  }
+
+test at test/e2e-server.test.ts:325:15
+✖ /api/match: null (1.173166ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  500 !== 400
+  
+      at TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/e2e-server.test.ts:328:16)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/e2e-server.test.ts:325:7)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 500,
+    expected: 400,
+    operator: 'strictEqual'
+  }
+
+test at test/e2e-server.test.ts:325:15
+✖ /api/match: [] (1.231833ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  200 !== 400
+  
+      at TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/e2e-server.test.ts:328:16)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/e2e-server.test.ts:325:7)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 200,
+    expected: 400,
+    operator: 'strictEqual'
+  }
+
+test at test/e2e-server.test.ts:325:15
+✖ /api/match: {} (1.156584ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  200 !== 400
+  
+      at TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/e2e-server.test.ts:328:16)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/e2e-server.test.ts:325:7)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 200,
+    expected: 400,
+    operator: 'strictEqual'
+  }
+
+test at test/e2e-server.test.ts:325:15
+✖ /api/match: {"rows":null,"lines":4,"csv":5} (1.224084ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  200 !== 400
+  
+      at TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/e2e-server.test.ts:328:16)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/e2e-server.test.ts:325:7)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 200,
+    expected: 400,
+    operator: 'strictEqual'
+  }
+
+test at test/e2e-server.test.ts:325:15
+✖ /api/match: {"rows":[null],"lines":[null]} (1.189834ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  200 !== 400
+  
+      at TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/e2e-server.test.ts:328:16)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/e2e-server.test.ts:325:7)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 200,
+    expected: 400,
+    operator: 'strictEqual'
+  }
+
+test at test/e2e-server.test.ts:319:13
+✖ /api/confirm malformed JSON (1.439292ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  500 !== 400
+  
+      at TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/e2e-server.test.ts:321:14)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/e2e-server.test.ts:319:5)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 500,
+    expected: 400,
+    operator: 'strictEqual'
+  }
+
+test at test/e2e-server.test.ts:325:15
+✖ /api/confirm: null (0.684709ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  500 !== 400
+  
+      at TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/e2e-server.test.ts:328:16)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/e2e-server.test.ts:325:7)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 500,
+    expected: 400,
+    operator: 'strictEqual'
+  }
+
+test at test/e2e-server.test.ts:325:15
+✖ /api/confirm: [] (0.70125ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  500 !== 400
+  
+      at TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/e2e-server.test.ts:328:16)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/e2e-server.test.ts:325:7)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 500,
+    expected: 400,
+    operator: 'strictEqual'
+  }
+
+test at test/e2e-server.test.ts:325:15
+✖ /api/confirm: {} (0.653958ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  500 !== 400
+  
+      at TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/e2e-server.test.ts:328:16)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/e2e-server.test.ts:325:7)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 500,
+    expected: 400,
+    operator: 'strictEqual'
+  }
+
+test at test/e2e-server.test.ts:325:15
+✖ /api/confirm: {"rows":null,"lines":4,"csv":5} (0.563542ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  500 !== 400
+  
+      at TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/e2e-server.test.ts:328:16)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/e2e-server.test.ts:325:7)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 500,
+    expected: 400,
+    operator: 'strictEqual'
+  }
+
+test at test/e2e-server.test.ts:325:15
+✖ /api/confirm: {"rows":[null],"lines":[null]} (0.557667ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  500 !== 400
+  
+      at TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/e2e-server.test.ts:328:16)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/e2e-server.test.ts:325:7)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 500,
+    expected: 400,
+    operator: 'strictEqual'
+  }
+
+test at test/e2e-server.test.ts:319:13
+✖ /api/catalog malformed JSON (0.458875ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  500 !== 400
+  
+      at TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/e2e-server.test.ts:321:14)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/e2e-server.test.ts:319:5)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 500,
+    expected: 400,
+    operator: 'strictEqual'
+  }
+
+test at test/e2e-server.test.ts:325:15
+✖ /api/catalog: null (0.649791ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  500 !== 400
+  
+      at TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/e2e-server.test.ts:328:16)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/e2e-server.test.ts:325:7)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 500,
+    expected: 400,
+    operator: 'strictEqual'
+  }
+
+test at test/e2e-server.test.ts:325:15
+✖ /api/catalog: [] (0.775709ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  500 !== 400
+  
+      at TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/e2e-server.test.ts:328:16)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/e2e-server.test.ts:325:7)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 500,
+    expected: 400,
+    operator: 'strictEqual'
+  }
+
+test at test/e2e-server.test.ts:325:15
+✖ /api/catalog: {} (0.716708ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  500 !== 400
+  
+      at TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/e2e-server.test.ts:328:16)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/e2e-server.test.ts:325:7)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 500,
+    expected: 400,
+    operator: 'strictEqual'
+  }
+
+test at test/e2e-server.test.ts:325:15
+✖ /api/catalog: {"rows":null,"lines":4,"csv":5} (0.694625ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  500 !== 400
+  
+      at TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/e2e-server.test.ts:328:16)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/e2e-server.test.ts:325:7)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 500,
+    expected: 400,
+    operator: 'strictEqual'
+  }
+
+test at test/e2e-server.test.ts:325:15
+✖ /api/catalog: {"rows":[null],"lines":[null]} (0.594334ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  500 !== 400
+  
+      at TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/e2e-server.test.ts:328:16)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/e2e-server.test.ts:325:7)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 500,
+    expected: 400,
+    operator: 'strictEqual'
+  }
+
+test at test/e2e-server.test.ts:336:1
+✖ oversized match and catalogue bodies return 413 with content type (7.460292ms)
+  AssertionError [ERR_ASSERTION]: /api/match
+  
+  500 !== 413
+  
+      at TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/e2e-server.test.ts:339:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 500,
+    expected: 413,
+    operator: 'strictEqual'
+  }
+
+test at test/e2e-server.test.ts:344:1
+✖ unknown routes, wrong methods, and traversal paths never expose project files (6002.354959ms)
+  TypeError [Error]: fetch failed
+      at node:internal/deps/undici/undici:15482:13
+      at async TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/e2e-server.test.ts:346:22)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    [cause]: Error: read ECONNRESET
+        at TCP.onStreamRead (node:internal/stream_base_commons:216:20) {
+      errno: -54,
+      code: 'ECONNRESET',
+      syscall: 'read'
+    }
+  }

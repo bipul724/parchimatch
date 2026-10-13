@@ -1,0 +1,137 @@
+✖ server --port 0 reports the actual listening port (204.336541ms)
+✔ status, static assets, samples, and NDJSON comma splitting have documented shapes (137.6435ms)
+✔ status and matching fall back safely when Ollama is down or model is unavailable (258.323583ms)
+✔ model path rejects wrong prices, outside candidates, near ties, invalid JSON twice, and HTTP 500 (36.073625ms)
+✔ invalid JSON repair and unsupported think fallback are exercised against the stub (3.742708ms)
+✔ concurrent matching returns 409 and busy resets after completion (256.963125ms)
+✖ client disconnect cancels remaining matching lines and promptly releases busy (86.525166ms)
+✔ confirm rejects unknown products, units, zero, fractions, and excessive quantities (5.301917ms)
+✖ confirm exports base quantities, keeps skipped rows, and persists each export separately (3.437917ms)
+✔ L1 known catalogue names cannot be learned through confirm (1.558166ms)
+✖ L5 remember requires an explicitly confirmed matching row and name (2.834708ms)
+✔ learned names survive restart and select price/size variants, but ask without either (127.737541ms)
+✔ catalogue replacement validates first, rolls back errors, and safely ignores removed learned SKUs (10.129666ms)
+✖ malformed JSON and invalid request shapes return 400 without crashing (0.690667ms)
+✖ oversized match and catalogue bodies return 413 with content type (6.2025ms)
+✖ unknown routes, wrong methods, and traversal paths never expose project files (6002.780167ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 9
+ℹ fail 7
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 7270.312375
+
+✖ failing tests:
+
+test at test/e2e-server.test.ts:95:1
+✖ server --port 0 reports the actual listening port (204.336541ms)
+  AssertionError [ERR_ASSERTION]: Expected "actual" to be strictly unequal to: '0'
+      at TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/e2e-server.test.ts:98:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:332:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '0',
+    expected: '0',
+    operator: 'notStrictEqual'
+  }
+
+test at test/e2e-server.test.ts:205:1
+✖ client disconnect cancels remaining matching lines and promptly releases busy (86.525166ms)
+  AssertionError [ERR_ASSERTION]: disconnected work must release busy without waiting for slow Ollama
+  
+  409 !== 200
+  
+      at TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/e2e-server.test.ts:216:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 409,
+    expected: 200,
+    operator: 'strictEqual'
+  }
+
+test at test/e2e-server.test.ts:230:1
+✖ confirm exports base quantities, keeps skipped rows, and persists each export separately (3.437917ms)
+  AssertionError [ERR_ASSERTION]: two exports within a second must not overwrite an earlier order
+      at TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/e2e-server.test.ts:244:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: '/var/folders/cz/k82yzd9s27585xby3j5bh_k40000gn/T/parchimatch-server-vnc6WP/data/exports/order-2026-10-13T08-28-07.csv',
+    expected: '/var/folders/cz/k82yzd9s27585xby3j5bh_k40000gn/T/parchimatch-server-vnc6WP/data/exports/order-2026-10-13T08-28-07.csv',
+    operator: 'notStrictEqual'
+  }
+
+test at test/e2e-server.test.ts:254:1
+✖ L5 remember requires an explicitly confirmed matching row and name (2.834708ms)
+  AssertionError [ERR_ASSERTION]: ghost alias
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/e2e-server.test.ts:262:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual'
+  }
+
+test at test/e2e-server.test.ts:300:1
+✖ malformed JSON and invalid request shapes return 400 without crashing (0.690667ms)
+  AssertionError [ERR_ASSERTION]: /api/match malformed JSON
+  
+  500 !== 400
+  
+      at TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/e2e-server.test.ts:303:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 500,
+    expected: 400,
+    operator: 'strictEqual'
+  }
+
+test at test/e2e-server.test.ts:314:1
+✖ oversized match and catalogue bodies return 413 with content type (6.2025ms)
+  AssertionError [ERR_ASSERTION]: /api/match
+  
+  500 !== 413
+  
+      at TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/e2e-server.test.ts:317:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 500,
+    expected: 413,
+    operator: 'strictEqual'
+  }
+
+test at test/e2e-server.test.ts:322:1
+✖ unknown routes, wrong methods, and traversal paths never expose project files (6002.780167ms)
+  TypeError [Error]: fetch failed
+      at node:internal/deps/undici/undici:15482:13
+      at async TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/e2e-server.test.ts:324:22)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    [cause]: Error: read ECONNRESET
+        at TCP.onStreamRead (node:internal/stream_base_commons:216:20) {
+      errno: -54,
+      code: 'ECONNRESET',
+      syscall: 'read'
+    }
+  }

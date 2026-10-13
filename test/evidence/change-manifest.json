@@ -1,0 +1,34 @@
+{
+  "source_fixes": [
+    "src/catalog.ts",
+    "src/llm.ts",
+    "src/review.ts",
+    "src/server.ts",
+    "src/text.ts",
+    "src/types.ts",
+    "src/validate.ts"
+  ],
+  "updated_docs": [
+    "SECURITY.md",
+    "docs/API.md",
+    "docs/ARCHITECTURE.md",
+    "docs/DATA_FORMATS.md",
+    "docs/RULES.md",
+    "data/synthetic/DATA_CARD.md"
+  ],
+  "new_test_files": [
+    "test/adversarial-dev.test.ts",
+    "test/catalog-more.test.ts",
+    "test/e2e-server.test.ts",
+    "test/harness.test.ts",
+    "test/llm-client.test.ts",
+    "test/orderlines-more.test.ts",
+    "test/parse-more.test.ts",
+    "test/property.test.ts",
+    "test/review-more.test.ts",
+    "test/rules.test.ts",
+    "test/ui-source.test.ts"
+  ],
+  "new_helper": "test/helpers/ollama-stub.ts",
+  "existing_test_cleanup": "test/app.test.ts"
+}

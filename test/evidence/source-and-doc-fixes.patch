@@ -1,0 +1,603 @@
+--- a/SECURITY.md
++++ b/SECURITY.md
+@@ -26,10 +26,15 @@
+ 
+ These are open and tracked for the external test pass ([TESTING_PROMPT.md](TESTING_PROMPT.md)):
+ 
+-1. **CSV formula injection.** Order text is written to the export CSV as-is. A line starting with `=`, `+`, `-` or `@` could be interpreted as a formula by a spreadsheet app. *Planned fix:* prefix such cells with `'` in `exportCsv()`.
+-2. **Oversized request bodies** return HTTP 500 instead of 413. Requests are still rejected.
+-3. **Client disconnects** during `/api/match` don't stop the server from finishing the remaining lines, so the server stays busy until it's done.
+-4. **No authentication** on the local server (by design for a single-user desktop tool; see the threat model).
++1. **No authentication** on the local server (by design for a single-user desktop tool; see the threat model).
++
++## Fixed in the external test pass
++
++- **CSV formula injection:** `exportCsv()` prefixes cells beginning with `=`, `+`, `-` or `@` (including after whitespace) with an apostrophe. Regression tests cover every exported text column and skipped rows. Carriage returns are now quoted too.
++- **Oversized request bodies:** return HTTP 413; malformed JSON and invalid request shapes return 400. Oversized bodies are drained without retaining their excess bytes.
++- **Client disconnects:** abort in-flight matching calls and stop subsequent lines, releasing the matching slot promptly. Concurrent request bodies cannot bypass the single-order guard.
++- **Unconfirmed learned names:** a remember entry must match an explicitly confirmed row's product words and SKU; skipped, automatic, missing, and unrelated rows cannot teach names.
++- **Export overwrite:** each export filename includes a timestamp and UUID, preserving separate orders exported within the same second.
+ 
+ ## Reporting a problem
+ 
+--- a/docs/API.md
++++ b/docs/API.md
+@@ -11,7 +11,7 @@
+ | Flag | Default | Meaning |
+ |---|---|---|
+ | `--catalog` | `data/synthetic/catalog.csv` | Catalogue CSV to load at start ([format](DATA_FORMATS.md#catalogue-csv)) |
+-| `--port` | `5178` | Port on 127.0.0.1 |
++| `--port` | `5178` | Port on 127.0.0.1; `0` asks the OS for a free port, printed at startup |
+ | `--data` | `data/app` | Writable folder for learned names, uploaded catalogue and exports |
+ | `--samples` | `data/synthetic/orders` | Folder of `*.txt` sample orders shown in the UI |
+ | `--model` | `qwen3.5:4b-q4_K_M` | Ollama model name |
+@@ -39,7 +39,7 @@
+ 
+ ## `POST /api/catalog`
+ 
+-Replaces the catalogue with an uploaded CSV. Body limit is 5 MB. The CSV is validated first; on any error, nothing changes.
++Replaces the catalogue with an uploaded CSV. Body limit is 5,000,000 bytes. The CSV is validated first; on any error, nothing changes. `csv` must be a string.
+ 
+ Request:
+ ```json
+@@ -61,7 +61,9 @@
+ 
+ ## `POST /api/match`
+ 
+-Matches an order. The response is **newline-delimited JSON** (`application/x-ndjson`), streamed one row at a time. Body limit is 1 MB.
++Matches an order. The response is **newline-delimited JSON** (`application/x-ndjson`), streamed one row at a time. Body limit is 1,000,000 bytes. Supply exactly one of `text` (a string) or `lines` (an array of strings); `force`, if supplied, must be a boolean.
++
++Only one match runs at a time, including requests whose bodies arrive concurrently. Disconnecting the client aborts the pending Ollama request, stops remaining lines, and releases the matching slot.
+ 
+ Request (one of `text` or `lines`):
+ ```json
+@@ -119,17 +121,22 @@
+ {
+   "rows": [
+     { "line": 2, "text": "kit kat 10/- darjan 4", "status": "confirmed", "sku": "KITKAT-10", "qty": 4, "unit": "dozen", "note": "automatic" },
++    { "line": 3, "text": "lais peela 10 rs 2 ctn", "status": "confirmed", "sku": "LAYSCLS-10", "qty": 2, "unit": "carton", "note": "checked by operator" },
+     { "line": 10, "text": "Parle 20 20 5 Piece", "status": "skipped", "sku": null, "qty": null, "unit": null, "note": "not stocked / skipped" }
+   ],
+   "remember": [{ "alias": "lais peela", "sku": "LAYSCLS-10" }]
+ }
+ ```
+ 
+-Server-side checks on every `confirmed` row: the SKU exists, the unit is one the item is sold in, and the quantity is a whole number from 1 to 10000. A `remember` entry is saved only if the SKU exists **and the catalogue doesn't already know that name** (a known name with a missing size is not a new name).
++`rows` must be an array of review rows with a positive integer `line`, string `text`, `confirmed` or `skipped` status, nullable SKU/quantity/unit fields, and an optional string `note`. `remember`, when supplied, must be an array of `{alias, sku}` strings.
++
++Server-side checks on every `confirmed` row: the SKU exists, the unit is one the item is sold in, and the quantity is a whole number from 1 to 10000. A `remember` entry is saved only if it matches the SKU and parsed product words of an explicitly confirmed row **and the catalogue doesn't already know that name** (a known name with a missing size is not a new name). Unmatched entries, entries linked only to skipped rows, and rows marked `note: "automatic"` are ignored. Alias matching uses normalised text.
++
++Each export has a full timestamp and UUID in its filename so successive exports cannot overwrite an earlier order.
+ 
+ | Status | Body |
+ |---|---|
+-| 200 | `{ "ok": true, "csv": "line_no,…", "file": "data/app/exports/order-2026-10-13T08-02-46.csv", "learned": 1, "learnedTotal": 3 }` |
++| 200 | `{ "ok": true, "csv": "line_no,…", "file": "data/app/exports/order-2026-10-13T08-02-46-519Z-<uuid>.csv", "learned": 1, "learnedTotal": 3 }` |
+ | 400 | `{ "ok": false, "errors": ["line 3: FORT-5L is not sold by carton"] }` |
+ 
+ Export columns are in [DATA_FORMATS.md](DATA_FORMATS.md#export-csv).
+@@ -148,8 +155,12 @@
+ 
+ | Status | Body |
+ |---|---|
++| 400 | `{ "error": "invalid JSON" }`, or a message describing an invalid request shape. Catalogue validation uses `{ "ok": false, "error": "…" }`; confirmed-row validation uses `{ "ok": false, "errors": ["…"] }` |
++| 413 | `{ "error": "request too large" }` when the applicable byte limit is exceeded |
+ | 404 | `{ "error": "not found" }` |
+-| 500 | `{ "error": "<message>" }` (also currently returned for oversized bodies; see [SECURITY.md](../SECURITY.md#known-issues)) |
++| 500 | `{ "error": "<message>" }` for unexpected internal failures |
++
++Unsupported HTTP methods use the same 404 response as unknown routes. Every response has a `content-type` header.
+ 
+ ## Calling Ollama
+ 
+--- a/docs/ARCHITECTURE.md
++++ b/docs/ARCHITECTURE.md
+@@ -39,7 +39,7 @@
+   A["Pasted order"] --> B["splitOrder()<br/>lines, commas, bullets"]
+   B --> C{"Learned name?"}
+   C -- yes --> L["learnedVariant()<br/>product family → price/size pick variant"]
+-  C -- no --> D{"Note?<br/>no digits and best score < 0.3"}
++  C -- no --> D{"Note?<br/>no normalized digits or parsed unit/pair<br/>and best score < 0.3"}
+   D -- yes --> N["Grey note row"]
+   D -- no --> E["parse()<br/>price · size · qty+unit · unknown unit"]
+   E --> F["retrieve()<br/>fuzzy score every item"]
+@@ -96,9 +96,9 @@
+ 
+ | State | Where | Lifetime |
+ |---|---|---|
+-| Catalogue | In memory, loaded from `--catalog` or the last uploaded CSV (`data/app/catalog.csv`) | Process; reloaded on upload |
++| Catalogue | In memory, loaded from `--catalog` (or the default path) on every start; uploads are saved to `<data>/catalog.csv` | Process; reloaded on upload. To restore an upload after restart, pass its saved path with `--catalog` |
+ | Learned names | In memory map + `data/app/aliases_learned.csv` (append-only; the last entry wins) | Persistent |
+-| Exports | `data/app/exports/order-<timestamp>.csv` | Persistent |
++| Exports | `data/app/exports/order-<timestamp>-<unique-id>.csv` | Persistent; each export has its own filename |
+ | Review decisions | Browser memory only, until export | Page session |
+ | Model | Ollama, `keep_alive` 15 minutes | Unloads after 15 idle minutes |
+ 
+--- a/docs/DATA_FORMATS.md
++++ b/docs/DATA_FORMATS.md
+@@ -23,7 +23,7 @@
+ | `units_per_carton` | | Positive whole number. Empty = unknown, so carton orders for this item always ask |
+ | `aliases` | | `|`-separated names **the shop's own system already uses**. Don't add misspellings or Hindi names here; they're what the tool should handle, and the operator teaches them through "Remember" |
+ 
+-Loading reports every problem with its row number (missing or duplicate SKU, unknown unit, non-numeric MRP, bad carton size), and nothing loads until all are fixed.
++Loading reports every problem with its row number (missing SKU or name, duplicate SKU, unknown unit, non-numeric MRP, bad carton size), and nothing loads until all are fixed.
+ 
+ ## Labelled order lines (JSONL)
+ 
+@@ -66,7 +66,9 @@
+ 
+ ## Export CSV
+ 
+-`data/app/exports/order-<timestamp>.csv`, also downloaded from the app. One row per item line; notes are left out.
++`data/app/exports/order-<timestamp>-<unique-id>.csv`, also downloaded from the app. Each export gets a full timestamp and random UUID so successive exports cannot overwrite an earlier order. One row per item line; notes are left out.
++
++Every exported cell whose first non-whitespace character is `=`, `+`, `-` or `@` is prefixed with an apostrophe (`'`) so spreadsheet readers treat it as text. This applies to order text, catalogue fields and reviewer notes, including skipped rows. The apostrophe is part of the CSV data. Commas, quotes, carriage returns and newlines are quoted according to CSV rules; Devanagari is preserved as UTF-8.
+ 
+ ```csv
+ line_no,order_text,sku,name,variant,qty,unit,base_qty,base_unit,status,reviewer_note
+--- a/docs/RULES.md
++++ b/docs/RULES.md
+@@ -18,14 +18,14 @@
+ | S2 | The product must exist in the catalogue | Model invents `PRLG-50` | Which product is "…"? |
+ | S3 | The product must be one of the candidates the model was shown | Model jumps outside its shortlist | Which product is "…"? |
+ | S4 | A product must be chosen | No confident match | Which product is "…"? |
+-| S5 | A price written in the order must equal the item's MRP | "parleg **10 wala**" → ₹5 pack | Which ₹10 item? |
+-| S6 | A pack size written in the order must equal the item's variant | "fortune **5 litre**" → 1 L pouch | Which 5000 ml item? |
+-| S7 | Two different number+unit pairs: the one that is part of the product name is dropped; if that doesn't leave exactly one, ask | "maggi **4 pack** 1 petti" → 1 carton | Which quantity: 4 packet or 1 carton? |
+-| S8 | (model) Quantity and unit must agree with what code read | Model turns "petti" into packet | Is it carton? |
++| S5 | A price written in the order must equal the item's MRP; conflicting explicit prices always ask | "parleg **10 wala**" → ₹5 pack | Which ₹10 item? / Which price? |
++| S6 | A written pack size must equal a known catalogue variant size, including its dimension; conflicting explicit sizes always ask | "fortune **5 litre**" → 1 L pouch | Which 5000 ml item? / Which pack size? |
++| S7 | Two different number+unit pairs: drop only a pair whose number **and unit** occur in a product name/alias; if that doesn't leave exactly one, ask, regardless of the proposal's quantity | "maggi **4 pack** 1 petti" → 1 carton; "maggi **4 ctn** 1 pkt" stays unresolved | Which quantity: 4 packet or 1 carton? |
++| S8 | (model) Quantity and unit must agree with what code read; a price or size cannot supply a missing quantity | Model turns "petti" into packet | Is it carton? / How many? |
+ | S9 | (model) The evidence words must all appear in the order | Model quotes words that aren't there | Is it …? |
+ | S10 | (model) A model pick auto-accepts only if the order's own words score it ahead of every other candidate by ≥ 0.08 (the same lead fuzzy needs) | "lays 10 wala" → Classic Salted, whose lead came from a shorter alias | Is it Lay's Classic Salted (₹10 pack)? |
+ | S11 | Quantity must be present, a whole number, 1–10000 | "maggi bhej dena" | How many? |
+-| S12 | An unknown unit word is never guessed | "10 **jodi**", "2 **ladi**" | What is "jodi"? packet or carton? |
++| S12 | An unknown unit word is never guessed, even if a proposal supplies a recognised unit | "10 **jodi**", "2 **ladi**" | What is "jodi"? packet or carton? |
+ | S13 | If no unit is written: fill it in only when the item is sold in exactly one unit | "aashirvaad 5kg 2" → bag | packet or carton? |
+ | S14 | The unit must be one the item is sold in | "fortune 5 litre 1 petti" | … is sold by piece. Which one? |
+ | S15 | Cartons need a known carton size | "clinic plus 2 petti" | How many in one carton of …? |
+@@ -34,7 +34,7 @@
+ 
+ **Hybrid** (the app's method): fuzzy first; the model is called only when fuzzy can't name a product. A model pick then goes through S1–S15.
+ 
+-**Notes:** a line with no digits whose best fuzzy score is under 0.3 is shown as a grey note ("Ram Ram bhaiya") and never exported. The operator can override with "Treat as item".
++**Notes:** a line with no digits after normalization, no parsed quantity+unit pair, and no parsed unit whose best fuzzy score is under 0.3 is shown as a grey note ("Ram Ram bhaiya") and never exported. Numeric orders, including supported non-ASCII digits, and Hindi number+unit orders remain item rows even when the product name is unfamiliar. The operator can override with "Treat as item".
+ 
+ ## 3. Learned-name rules (`src/review.ts`, `src/server.ts`)
+ 
+@@ -50,9 +50,9 @@
+ 
+ Applied in this order:
+ 
+-1. **Normalise:** lowercase, NFKC, Devanagari digits → ASCII, Devanagari unit words → Latin (`पेटी` → petti), `₹` → rs, `5/-` → `5 rs`, split glued numbers (`5kg` → `5 kg`), strip punctuation.
+-2. **Price:** a number followed by `rs / rupees / wala / wali / vala …`, then `rs` followed by a number. Prices are MRP hints, never quantities.
+-3. **Pack size:** a number followed by `kg / kilo / g / gm / gram / l / ltr / litre / ml`. Sizes are variant hints, never quantities.
++1. **Normalise:** lowercase, NFKC (including full-width digits), Devanagari/Gujarati/Bengali digits → ASCII, Devanagari unit words → Latin (`पेटी` → petti), `₹` → rs, `5/-` → `5 rs`, split glued numbers (`5kg` → `5 kg`), strip punctuation. Decimal points and negative number signs survive so S11 can reject negative quantities. Zero-width formatting marks inside numeric text are removed to preserve the whole number, sign, and decimal. `2-ctn` and `ctn-2` remain separators; `rs.10` becomes `rs 10`.
++2. **Price:** a number followed by `rs / rupees / wala / wali / vala …`, then `rs` followed by a number. Prices are MRP hints, never quantities. All explicit hints are retained; different prices require review.
++3. **Pack size:** a number followed by `kg / kilo / g / gm / gram / l / ltr / litre / ml`. Sizes are variant hints, never quantities. All explicit sizes are retained; conflicting values or dimensions require review.
+ 4. **Quantity + unit:** a unit word with a number directly before it (digits or a Hindi number word), or digits directly after it (`ctn 2`).
+ 
+    | Unit | Words accepted |
+@@ -65,7 +65,7 @@
+ 
+ 5. **Hindi number words** (`ek, do, teen, char, paanch, … das, barah, bees, pachas, sau`) count **only directly before a unit word**, because "do" also means "give" ("bhej do").
+ 6. **Two or more different pairs** → quantity unresolved (S7 decides).
+-7. **No pair, one bare number** → that's the quantity, unit unknown. If a word follows that number and isn't a known unit or filler, it's recorded as an **unknown unit** (S12).
++7. **No pair, one bare number** → that's the quantity, unit unknown. If a word follows any unused number and isn't a known unit or filler, it's recorded as an **unknown unit** (S12), even when another recognised quantity+unit pair is present. Thus `maggi 2 ctn 5 jodi` still asks about `jodi`.
+ 8. **Product text** = what's left, minus fillers (`bhej, bhejo, dena, chahiye, pls, aur, bhai, …`).
+ 
+ Pack sizes in kg/g/L/ml are never order units. A shop orders "3 bag" of 10 kg atta, not "30 kg".
+--- a/src/catalog.ts
++++ b/src/catalog.ts
+@@ -14,6 +14,7 @@
+     const line = i + 2;
+     const sku = r.sku;
+     if (!sku) errors.push(`row ${line}: missing sku`);
++    if (!r.name) errors.push(`row ${line}: missing name`);
+     if (seen.has(sku)) errors.push(`row ${line}: duplicate sku ${sku}`);
+     seen.add(sku);
+     const sellUnits = (r.sell_units || '').split('|').map((u) => u.trim()).filter(Boolean);
+--- a/src/llm.ts
++++ b/src/llm.ts
+@@ -7,11 +7,12 @@
+   model: string;
+   think: boolean;
+   numCtx: number;
++  signal?: AbortSignal;
+ }
+ 
+-export async function availableModels(url: string): Promise<string[] | null> {
++export async function availableModels(url: string, signal?: AbortSignal): Promise<string[] | null> {
+   try {
+-    const res = await fetch(`${url}/api/tags`);
++    const res = await fetch(`${url}/api/tags`, { signal });
+     if (!res.ok) return null;
+     const j = (await res.json()) as { models?: { name: string }[] };
+     return (j.models ?? []).map((m) => m.name);
+@@ -48,6 +49,7 @@
+     method: 'POST',
+     headers: { 'content-type': 'application/json' },
+     body: JSON.stringify(body),
++    signal: cfg.signal,
+   });
+   if (!res.ok) {
+     const text = await res.text();
+--- a/src/review.ts
++++ b/src/review.ts
+@@ -60,11 +60,12 @@
+ export async function matchLine(line: number, text: string, ctx: Ctx, learned: Map<string, string>, useModel: boolean, forceItem = false): Promise<Row> {
+   const parsed = parse(text);
+   const ranked = retrieve(parsed, ctx.catalog, 5);
+-  const learnedSku = learned.get(parsed.productText);
++  const savedSku = learned.get(parsed.productText);
++  const learnedSku = savedSku && ctx.index.has(savedSku) ? savedSku : undefined;
+   const base = { line, text, productText: parsed.productText, nameKnown: nameIsKnown(parsed.productText, ctx.catalog) };
+ 
+   // "Ram Ram bhaiya", "Total bata dena": no number and nothing in the catalogue resembles it.
+-  if (!forceItem && !learnedSku && !/[0-9०-९]/.test(text) && (ranked[0]?.score ?? 0) < 0.3) {
++  if (!forceItem && !learnedSku && !parsed.pairs.length && parsed.unit === null && !parsed.tokens.some((token) => /[0-9]/.test(token)) && (ranked[0]?.score ?? 0) < 0.3) {
+     return { ...base, kind: 'note', source: 'none', status: 'needs_review', sku: null, qty: null, unit: null, reasons: ['looks like a note, not an item'], question: '', candidates: [], ms: null };
+   }
+ 
+@@ -138,8 +139,10 @@
+ 
+ export function exportCsv(rows: ConfirmedRow[], index: Map<string, CatalogItem>): string {
+   const q = (v: unknown) => {
+-    const s = v === null || v === undefined ? '' : String(v);
+-    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
++    let s = v === null || v === undefined ? '' : String(v);
++    // Spreadsheet readers can interpret these prefixes as formulas, even after whitespace.
++    if (/^\s*[=+@-]/.test(s)) s = "'" + s;
++    return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+   };
+   const out = ['line_no,order_text,sku,name,variant,qty,unit,base_qty,base_unit,status,reviewer_note'];
+   for (const r of rows) {
+--- a/src/server.ts
++++ b/src/server.ts
+@@ -1,4 +1,5 @@
+ import { createServer } from 'node:http';
++import { randomUUID } from 'node:crypto';
+ import type { IncomingMessage, ServerResponse } from 'node:http';
+ import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+ import { join, resolve } from 'node:path';
+@@ -11,6 +12,7 @@
+ import { checkConfirmed, exportCsv, itemLabel, matchLine, nameIsKnown } from './review.ts';
+ import type { ConfirmedRow } from './review.ts';
+ import type { CatalogItem } from './types.ts';
++import { normalize, parse } from './text.ts';
+ import { ensureDir, parseArgs } from './util.ts';
+ 
+ // Local review app. Binds to 127.0.0.1 only; nothing leaves the machine except calls to the local Ollama.
+@@ -29,10 +31,10 @@
+ let catalog: CatalogItem[] = loadCatalog(catalogPath);
+ let ctx: Ctx = makeCtx(catalog, { llm: { url: ollamaUrl, model, think: false, numCtx: 2048 } });
+ let learned = loadLearned(learnedPath, ctx.index);
+-let busy = false;
++let activeMatch: AbortController | null = null;
+ 
+-async function modelReady(): Promise<boolean> {
+-  const models = await availableModels(ollamaUrl);
++async function modelReady(signal?: AbortSignal): Promise<boolean> {
++  const models = await availableModels(ollamaUrl, signal);
+   return !!models?.includes(model);
+ }
+ 
+@@ -52,10 +54,24 @@
+   const chunks: Buffer[] = [];
+   for await (const c of req) {
+     size += (c as Buffer).length;
+-    if (size > limit) throw new Error('request too large');
+-    chunks.push(c as Buffer);
++    // Drain an oversized body without retaining it or destroying a reusable HTTP connection.
++    if (size <= limit) chunks.push(c as Buffer);
+   }
+-  return JSON.parse(Buffer.concat(chunks).toString('utf8')) as T;
++  if (size > limit) throw new HttpError(413, 'request too large');
++  let value: unknown;
++  try { value = JSON.parse(Buffer.concat(chunks).toString('utf8')); }
++  catch { throw new HttpError(400, 'invalid JSON'); }
++  if (!isObject(value)) throw new HttpError(400, 'request body must be a JSON object');
++  return value as T;
++}
++
++class HttpError extends Error {
++  status: number;
++  constructor(status: number, message: string) { super(message); this.status = status; }
++}
++
++function isObject(value: unknown): value is Record<string, unknown> {
++  return value !== null && typeof value === 'object' && !Array.isArray(value);
+ }
+ 
+ const server = createServer(async (req, res) => {
+@@ -77,6 +93,7 @@
+     if (req.method === 'POST' && url.pathname === '/api/catalog') {
+       // Replace the catalogue with an uploaded CSV. Validation errors come back by row; nothing is replaced on error.
+       const { csv } = await readJson<{ csv: string }>(req, 5_000_000);
++      if (typeof csv !== 'string') throw new HttpError(400, 'csv must be a string');
+       const path = join(dataDir, 'catalog.csv');
+       const tmp = `${path}.upload`;
+       ensureDir(tmp);
+@@ -101,34 +118,60 @@
+ 
+     if (req.method === 'POST' && url.pathname === '/api/match') {
+       // Streams one JSON row per line as soon as it is matched, so the table fills while the model works.
+-      if (busy) return send(res, 409, { error: 'Already matching an order. Wait for it to finish.' });
++      if (activeMatch) return send(res, 409, { error: 'Already matching an order. Wait for it to finish.' });
+       const { text, lines: only, force } = await readJson<{ text?: string; lines?: string[]; force?: boolean }>(req);
++      if ((text === undefined) === (only === undefined) || (text !== undefined && typeof text !== 'string') || (only !== undefined && (!Array.isArray(only) || !only.every((line) => typeof line === 'string'))) || (force !== undefined && typeof force !== 'boolean')) {
++        throw new HttpError(400, 'provide either text (string) or lines (string array), and optional force (boolean)');
++      }
+       const lines = only ?? splitOrder(text ?? '');
+-      busy = true;
+-      res.writeHead(200, { 'content-type': 'application/x-ndjson; charset=utf-8', 'cache-control': 'no-store' });
++      // Reading a body yields: another request may have acquired the slot meanwhile.
++      if (activeMatch) return send(res, 409, { error: 'Already matching an order. Wait for it to finish.' });
++      const controller = new AbortController();
++      activeMatch = controller;
++      const matchCtx = { ...ctx, llm: { ...ctx.llm, signal: controller.signal } };
++      const matchLearned = learned;
++      res.once('close', () => {
++        if (!res.writableEnded) {
++          controller.abort();
++          if (activeMatch === controller) activeMatch = null;
++        }
++      });
++      res.writeHead(200, { 'content-type': 'application/x-ndjson; charset=utf-8', 'cache-control': 'no-store', 'x-content-type-options': 'nosniff' });
+       try {
+-        const useModel = await modelReady();
++        const useModel = await modelReady(controller.signal);
++        if (controller.signal.aborted) return;
+         res.write(JSON.stringify({ type: 'start', total: lines.length, useModel }) + '\n');
+         for (let i = 0; i < lines.length; i++) {
+-          const row = await matchLine(i + 1, lines[i], ctx, learned, useModel, !!force);
++          if (controller.signal.aborted) return;
++          const row = await matchLine(i + 1, lines[i], matchCtx, matchLearned, useModel, !!force);
++          if (controller.signal.aborted) return;
+           res.write(JSON.stringify({ type: 'row', row }) + '\n');
+         }
+         res.end(JSON.stringify({ type: 'done' }) + '\n');
+       } finally {
+-        busy = false;
++        if (activeMatch === controller) activeMatch = null;
+       }
+       return;
+     }
+ 
+     if (req.method === 'POST' && url.pathname === '/api/confirm') {
+       const { rows, remember } = await readJson<{ rows: ConfirmedRow[]; remember: { alias: string; sku: string }[] }>(req);
++      if (!Array.isArray(rows) || !rows.every((row) => isObject(row) && Number.isInteger(row.line) && row.line > 0 && typeof row.text === 'string' && (row.status === 'confirmed' || row.status === 'skipped') && (row.sku === null || typeof row.sku === 'string') && (row.qty === null || typeof row.qty === 'number') && (row.unit === null || typeof row.unit === 'string') && (row.note === undefined || typeof row.note === 'string'))) {
++        throw new HttpError(400, 'rows must be an array of review rows');
++      }
++      if (remember !== undefined && (!Array.isArray(remember) || !remember.every((entry) => isObject(entry) && typeof entry.alias === 'string' && typeof entry.sku === 'string'))) {
++        throw new HttpError(400, 'remember must be an array of alias and sku strings');
++      }
+       const errors = checkConfirmed(rows, ctx.index);
+       if (errors.length) return send(res, 400, { ok: false, errors });
+       let learnedNow = 0;
+       // Only teach names the catalogue doesn't already know; a known name with a missing size is not a new name.
+-      for (const r of remember ?? []) if (ctx.index.has(r.sku) && !nameIsKnown(r.alias, catalog) && addLearned(learnedPath, learned, r.alias, r.sku)) learnedNow++;
++      for (const r of remember ?? []) {
++        const confirmed = rows.some((row) => row.status === 'confirmed' && row.note !== 'automatic' && row.sku === r.sku && parse(row.text).productText === normalize(r.alias));
++        if (confirmed && ctx.index.has(r.sku) && !nameIsKnown(r.alias, catalog) && addLearned(learnedPath, learned, r.alias, r.sku)) learnedNow++;
++      }
+       const csv = exportCsv(rows, ctx.index);
+-      const file = join(dataDir, 'exports', `order-${new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)}.csv`);
++      const file = join(dataDir, 'exports', `order-${new Date().toISOString().replace(/[:.]/g, '-')}-${randomUUID()}.csv`);
+       ensureDir(file);
+       writeFileSync(file, csv);
+       return send(res, 200, { ok: true, csv, file: file.replace(`${root}/`, ''), learned: learnedNow, learnedTotal: learned.size });
+@@ -136,12 +179,13 @@
+ 
+     send(res, 404, { error: 'not found' });
+   } catch (e) {
+-    if (!res.headersSent) send(res, 500, { error: (e as Error).message });
++    if (!res.headersSent) send(res, e instanceof HttpError ? e.status : 500, { error: (e as Error).message });
+     else res.end();
+   }
+ });
+ 
+ server.listen(port, '127.0.0.1', async () => {
+-  console.log(`ParchiMatch Lite → http://127.0.0.1:${port}`);
++  const address = server.address();
++  console.log(`ParchiMatch Lite → http://127.0.0.1:${address && typeof address !== 'string' ? address.port : port}`);
+   console.log(`catalogue ${catalog.length} items (${catalogPath.replace(`${root}/`, '')}) · learned names ${learned.size} · model ${model} ${(await modelReady()) ? 'ready' : 'NOT available, fuzzy only'}`);
+ });
+--- a/src/text.ts
++++ b/src/text.ts
+@@ -2,7 +2,7 @@
+ 
+ // Deterministic reading of one order line. Code owns every number; the model only resolves the product.
+ 
+-const DEVANAGARI_DIGITS = '०१२३४५६७८९';
++const DIGIT_SETS = ['०१२३४५६७८९', '૦૧૨૩૪૫૬૭૮૯', '০১২৩৪৫৬৭৮৯'];
+ const DEVANAGARI_WORDS: Record<string, string> = {
+   'पेटी': 'petti',
+   'पेटि': 'petti',
+@@ -50,16 +50,24 @@
+   ...PRICE_AFTER_NUMBER,
+ ]);
+ 
+-const isDigits = (t: string) => /^\d+(\.\d+)?$/.test(t);
++const isDigits = (t: string) => /^-?\d+(\.\d+)?$/.test(t);
+ 
+ export function normalize(raw: string): string {
+   let s = raw.normalize('NFKC').toLowerCase();
+-  s = s.replace(/[०-९]/g, (d) => String(DEVANAGARI_DIGITS.indexOf(d)));
++  for (const digits of DIGIT_SETS) {
++    s = s.replace(new RegExp(`[${digits}]`, 'g'), (d) => String(digits.indexOf(d)));
++  }
++  // Invisible formatting inside a number must not turn 22 into two separate 2s.
++  s = s.replace(/(?<=[\d.\-−])[\u200b\u200c\u200d\ufeff]+(?=[\d.])/g, '');
+   for (const [dev, lat] of Object.entries(DEVANAGARI_WORDS)) s = s.split(dev).join(` ${lat} `);
+   s = s.replace(/₹/g, ' rs ');
+   s = s.replace(/(\d)\s*\/-/g, '$1 rs ');
+   s = s.replace(/(\d)([a-zऀ-ॿ])/g, '$1 $2').replace(/([a-zऀ-ॿ])(\d)/g, '$1 $2');
+-  s = s.replace(/[^a-z0-9.ऀ-ॿ]+/g, ' ');
++  // Keep decimal points and signed numbers, but split punctuation such as "rs.10".
++  s = s.replace(/(?<!\d)\.|\.(?!\d)/g, ' ');
++  s = s.replace(/−/g, '-');
++  s = s.replace(/(?<=[a-zऀ-ॿ])-(?=\d)|-(?!\d)/g, ' ');
++  s = s.replace(/[^a-z0-9.\-ऀ-ॿ]+/g, ' ');
+   s = s.replace(/(^|\s)\.+|\.+(?=\s|$)/g, ' ');
+   return s.replace(/\s+/g, ' ').trim();
+ }
+@@ -95,17 +103,25 @@
+   const used = tokens.map(() => false);
+   let priceHint: number | null = null;
+   let sizeHint: Size | null = null;
++  const priceHints: number[] = [];
++  const sizeHints: Size[] = [];
+ 
+   // 1. Prices written after the number ("5 rs", "10 wala") take precedence over "rs 5".
+   for (let i = 0; i + 1 < tokens.length; i++) {
+     if (!used[i] && isDigits(tokens[i]) && PRICE_AFTER_NUMBER.has(tokens[i + 1])) {
+       priceHint ??= Number(tokens[i]);
++      priceHints.push(Number(tokens[i]));
+       used[i] = used[i + 1] = true;
+     }
+   }
+   for (let i = 0; i + 1 < tokens.length; i++) {
+-    if (!used[i] && !used[i + 1] && PRICE_BEFORE_NUMBER.has(tokens[i]) && isDigits(tokens[i + 1])) {
++    // In "rs 5 rs 10", the middle rs marks both the first suffix and the second prefix.
++    // Do not consume the ordinary quantity in "5 rs 2 pkt" or "5 rs 2".
++    const sharedMarker = used[i] && i >= 2 && isDigits(tokens[i - 1]) && PRICE_BEFORE_NUMBER.has(tokens[i - 2])
++      && !UNIT_WORDS[tokens[i + 2]] && !SIZE_WORDS[tokens[i + 2]];
++    if ((!used[i] && !used[i + 1] || sharedMarker) && PRICE_BEFORE_NUMBER.has(tokens[i]) && isDigits(tokens[i + 1])) {
+       priceHint ??= Number(tokens[i + 1]);
++      if (!priceHints.includes(Number(tokens[i + 1]))) priceHints.push(Number(tokens[i + 1]));
+       used[i] = used[i + 1] = true;
+     }
+   }
+@@ -116,6 +132,7 @@
+       const s = sizeOf(Number(tokens[i]), tokens[i + 1]);
+       if (s) {
+         sizeHint ??= s;
++        sizeHints.push(s);
+         used[i] = used[i + 1] = true;
+       }
+     }
+@@ -156,24 +173,26 @@
+   let qty: number | null = null;
+   let unit: Unit | null = null;
+   let unknownUnit: string | null = null;
++  // Retain every unexplained number+word phrase, even beside a recognised pair.
++  // Otherwise "2 ctn 5 jodi" silently loses the second ordered quantity.
++  for (const i of bareAt) {
++    const next = tokens[i + 1];
++    if (next && !used[i + 1] && !FILLER.has(next) && /^[a-zऀ-ॿ]+$/.test(next)) {
++      unknownUnit ??= next;
++      used[i + 1] = true;
++    }
++  }
+   const distinct = pairs.filter((p, i) => pairs.findIndex((q) => q.qty === p.qty && q.unit === p.unit) === i);
+   if (distinct.length === 1) ({ qty, unit } = distinct[0]);
+   else if (distinct.length === 0) {
+     if (bareNumbers.length === 1) {
+       qty = bareNumbers[0];
+-      // "10 jodi", "2 ladi": a word right after the quantity is probably a unit we don't know. Don't guess it.
+-      const i = bareAt[0];
+-      const next = tokens[i + 1];
+-      if (next && !used[i + 1] && !FILLER.has(next) && /^[a-zऀ-ॿ]+$/.test(next)) {
+-        unknownUnit = next;
+-        used[i + 1] = true;
+-      }
+     }
+     unit = loneUnit;
+   }
+ 
+   const productText = tokens.filter((t, i) => !used[i] && !FILLER.has(t)).join(' ');
+-  return { tokens, productText, qty, unit, pairs: distinct, priceHint, sizeHint, unknownUnit };
++  return { tokens, productText, qty, unit, pairs: distinct, priceHint, sizeHint, priceHints, sizeHints, unknownUnit };
+ }
+ 
+ // True when the order text itself contains this quantity (as digits or a Hindi number word).
+--- a/src/types.ts
++++ b/src/types.ts
+@@ -33,6 +33,8 @@
+   pairs: QtyUnit[]; // every number+unit pair found; >1 distinct pairs means the line is ambiguous
+   priceHint: number | null; // "5/-", "10 wala", "rs 20"
+   sizeHint: Size | null; // "1 kg", "250 gm", "5 litre"
++  priceHints?: number[]; // every explicit price, so contradictory hints cannot be silently discarded
++  sizeHints?: Size[]; // every explicit size, including its dimension
+   unknownUnit?: string | null; // word after a bare quantity that isn't a known unit ("10 jodi")
+ }
+ 
+--- a/src/validate.ts
++++ b/src/validate.ts
+@@ -1,5 +1,5 @@
+ import { phrases, variantSize } from './catalog.ts';
+-import { mentionsNumber, normalize, sameSize } from './text.ts';
++import { normalize, parse, sameSize } from './text.ts';
+ import type { CatalogItem, Parsed, Prediction, Proposal, QtyUnit } from './types.ts';
+ 
+ export interface FinalizeOptions {
+@@ -13,8 +13,8 @@
+ // "maggi 4 pack 1 petti": the 4 belongs to the product name, so the quantity is 1 carton.
+ export function resolvePairs(parsed: Parsed, item: CatalogItem): QtyUnit | null {
+   if (parsed.pairs.length <= 1) return null;
+-  const nameTokens = new Set(phrases(item).flatMap((p) => p.split(' ')));
+-  const left = parsed.pairs.filter((pr) => !nameTokens.has(String(pr.qty)));
++  const namePairs = phrases(item).flatMap((p) => parse(p).pairs);
++  const left = parsed.pairs.filter((pr) => !namePairs.some((named) => named.qty === pr.qty && named.unit === pr.unit));
+   return left.length === 1 ? left[0] : null;
+ }
+ 
+@@ -44,14 +44,19 @@
+   if (p.status === 'needs_review') flag('decider unsure', askProduct);
+   else if (!item) flag('no product chosen', askProduct);
+ 
+-  if (item && qty === null && parsed.pairs.length > 1) {
+-    const r = resolvePairs(parsed, item);
+-    if (r) ({ qty, unit } = r);
++  if (parsed.pairs.length > 1) {
++    const r = item ? resolvePairs(parsed, item) : null;
++    // Only code can resolve multiple written pairs; a proposal cannot bypass S7.
++    qty = r?.qty ?? null;
++    unit = r?.unit ?? null;
+   }
+ 
+   if (item) {
++    if (parsed.priceHints?.some((hint) => hint !== parsed.priceHint)) flag('conflicting price hints in the order', 'Which price?');
++    if (parsed.sizeHint && parsed.sizeHints?.some((hint) => !sameSize(hint, parsed.sizeHint!))) flag('conflicting pack size hints in the order', 'Which pack size?');
+     if (parsed.priceHint !== null && item.mrp !== null && item.mrp !== parsed.priceHint) flag(`order says ₹${parsed.priceHint} but ${item.sku} is ₹${item.mrp}`, `Which ₹${parsed.priceHint} item?`);
+     const vs = variantSize(item);
++    if (parsed.sizeHint && !vs) flag(`catalogue pack size is unknown for ${item.sku} (${item.variant})`, `Which ${parsed.sizeHint.value} ${parsed.sizeHint.dim} item?`);
+     if (parsed.sizeHint && vs && !sameSize(parsed.sizeHint, vs)) flag(`order pack size differs from ${item.sku} (${item.variant})`, `Which ${parsed.sizeHint.value} ${parsed.sizeHint.dim} item?`);
+   }
+ 
+@@ -59,7 +64,7 @@
+     if (parsed.pairs.length <= 1) {
+       if (parsed.qty !== null && qty !== parsed.qty) flag(`quantity ${qty} differs from order text (${parsed.qty})`, `Is it ${parsed.qty}?`);
+       if (parsed.unit !== null && unit !== parsed.unit) flag(`unit ${unit} differs from order text (${parsed.unit})`, `Is it ${parsed.unit}?`);
+-      if (parsed.qty === null && qty !== null && !mentionsNumber(parsed.tokens, qty)) flag(`quantity ${qty} does not appear in the order`, 'How many?');
++      if (parsed.qty === null && qty !== null) flag(`quantity ${qty} was not read as an order quantity`, 'How many?');
+     }
+     const ev = normalize(p.evidence ?? '').split(' ').filter(Boolean);
+     if (p.status === 'ok' && (ev.length === 0 || !ev.every((w) => parsed.tokens.includes(w)))) flag('evidence is not quoted from the order', askProduct);
+@@ -75,11 +80,11 @@
+   else if (!Number.isInteger(qty) || qty <= 0 || qty > 10000) flag(`implausible quantity ${qty}`, `Is ${qty} correct?`);
+ 
+   if (item) {
+-    if (unit === null && parsed.unknownUnit) flag(`unit word "${parsed.unknownUnit}" not recognised`, `What is "${parsed.unknownUnit}"? ${item.sellUnits.join(' or ')}?`);
+-    else if (unit === null) {
++    if (parsed.unknownUnit) flag(`unit word "${parsed.unknownUnit}" not recognised`, `What is "${parsed.unknownUnit}"? ${item.sellUnits.join(' or ')}?`);
++    if (unit === null && !parsed.unknownUnit) {
+       if (item.sellUnits.length === 1) unit = item.sellUnits[0];
+       else flag(`unit missing; ${item.sku} is sold by ${item.sellUnits.join('/')}`, `${item.sellUnits.join(' or ')}?`);
+-    } else if (!item.sellUnits.includes(unit)) flag(`${item.sku} is not sold by ${unit}`, `${label} is sold by ${item.sellUnits.join('/')}. Which one?`);
++    } else if (unit !== null && !item.sellUnits.includes(unit)) flag(`${item.sku} is not sold by ${unit}`, `${label} is sold by ${item.sellUnits.join('/')}. Which one?`);
+     if (unit === 'carton' && item.unitsPerCarton === null) flag(`units per carton unknown for ${item.sku}`, `How many in one carton of ${item.name} ${item.variant}?`);
+   }
+ 
+--- a/data/synthetic/DATA_CARD.md
++++ b/data/synthetic/DATA_CARD.md
+@@ -1,6 +1,6 @@
+ # Synthetic data card — ParchiMatch Lite
+ 
+-**Everything in this folder is synthetic.** No real shop, customer, order or shopkeeper is behind it. It was generated by [`tools/gen-synthetic.ts`](../../tools/gen-synthetic.ts) with seed `2026`, so anyone can regenerate it byte for byte.
++**Everything in this folder is synthetic.** No real shop, customer, order or shopkeeper is behind it. It was generated by [`tools/gen-synthetic.ts`](../../tools/gen-synthetic.ts) with seed `2026`, so anyone can regenerate the seeded data files and their hashes byte for byte. The lock's `created` timestamp records the run time and will differ between runs.
+ 
+ ## What's here
+ 

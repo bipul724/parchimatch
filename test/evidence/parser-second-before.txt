@@ -1,0 +1,83 @@
+✔ parser table: atta 1.5 kg 2 bag (2.875833ms)
+✔ parser table: maggi x2 (0.256ms)
+✔ parser table: maggi 2x (0.221167ms)
+✔ parser table: maggi 2-ctn (0.221125ms)
+✔ parser table: ctn-2 maggi (0.194833ms)
+✔ parser table: maggi 0 ctn (0.078542ms)
+✔ parser table: maggi 1000000000 ctn (0.07ms)
+✔ parser table: maggi 2 ctn 5 pkt (0.068375ms)
+✔ parser table: maggi २ ctn (0.239084ms)
+✔ parser table: parle g Rs 10/- 2 pkt (0.119792ms)
+✔ parser table: parle g ₹ 10 2 pkt (0.073333ms)
+✔ parser table: MAGGI!!! 2ctn 🙏 (0.06175ms)
+✔ parser table: ctn 2 maggi (0.051541ms)
+✔ parser table: maggi bhej do (0.060125ms)
+✔ parser table: maggi ２ ctn (0.049209ms)
+✔ parser table: maggi 2​ctn (0.048083ms)
+✔ parser recognizes rs.10 as an explicit price marker (0.073ms)
+✔ parser preserves a negative quantity for the plausibility check (0.053833ms)
+✔ parser retains Gujarati and Bengali digits even when mixed with Latin digits (0.095875ms)
+✔ parser retains conflicting explicit prices and sizes for validation (0.090667ms)
+✔ debatable syntax: half kilo stays literal and an unmarked 14 is not inferred as a price (0.072916ms)
+✔ normalization keeps full-width punctuation and repeated normalization stable (0.056542ms)
+✔ seeded parser inputs never throw and normalize is idempotent (seed 20261013) (40.203708ms)
+✔ seeded finalize never auto-accepts missing, invalid, incompatible, or contradictory values (26.265667ms)
+✔ S1 decider unsure requires review and preserves its product suggestion (1.656916ms)
+✔ S2 invented catalogue SKU is rejected (0.127583ms)
+✔ S3 model SKU must occur in the candidates shown (0.130291ms)
+✔ S4 no product chosen requires a product question (0.081583ms)
+✔ S5 a written MRP must match the chosen variant (0.081084ms)
+✔ S6 written pack size must match both dimension and value (0.142167ms)
+✔ S7 unresolved distinct quantity pairs require review (0.582333ms)
+✔ S8 model quantity and unit must agree with deterministic parsing (0.131834ms)
+✔ S9 model evidence must contain only words from the order (0.116209ms)
+✔ S10 model near-tie remains an amber suggestion (0.24425ms)
+✔ S11 quantity must be present, whole, and between 1 and 10000 (0.197542ms)
+✔ S12 unknown unit word is never guessed even for a single-unit product (0.109833ms)
+✔ S13 absent unit is filled only for a product sold in exactly one unit (0.091583ms)
+✔ S14 requested unit must be one the product is sold in (0.060917ms)
+✔ S15 carton orders need a known carton size (0.159666ms)
+✔ S7 a product number does not erase a different order unit (0.076125ms)
+✔ S7 a proposal cannot supply a quantity for unresolved pairs (0.11575ms)
+✔ S5 conflicting written prices require review instead of retaining the first (0.083334ms)
+✔ S6 conflicting written sizes require review instead of retaining the first (0.062708ms)
+✔ S6 a written size requires a verifiable catalogue variant size (0.0555ms)
+✔ S11 a written negative quantity is never converted to a positive order (0.04175ms)
+✔ S12 a model cannot invent a unit to bypass an unknown unit word (0.073583ms)
+✖ S8 a written price cannot be reused as a model supplied quantity (0.5295ms)
+✔ size-family mismatch for dettol soap cannot auto-accept a liquid pack size (1.066292ms)
+✔ real item words without digits still reach review rather than becoming notes (11.490625ms)
+✔ base quantities preserve carton and dozen conversions and unknown carton sizes (0.102541ms)
+ℹ tests 50
+ℹ suites 0
+ℹ pass 49
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 186.46625
+
+✖ failing tests:
+
+test at test/rules.test.ts:113:1
+✖ S8 a written price cannot be reused as a model supplied quantity (0.5295ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'ok'
+  - 'needs_review'
+  
+      at review (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/rules.test.ts:19:10)
+      at TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/rules.test.ts:114:3)
+      at Test.runInAsyncScope (node:async_hooks:214:14)
+      at Test.run (node:internal/test_runner/test:1062:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:752:18)
+      at Test.postRun (node:internal/test_runner/test:1191:19)
+      at Test.run (node:internal/test_runner/test:1119:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'ok',
+    expected: 'needs_review',
+    operator: 'strictEqual'
+  }

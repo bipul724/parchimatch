@@ -1,0 +1,44 @@
+✔ server --port 0 reports the actual listening port (216.485709ms)
+✔ status, static assets, samples, and NDJSON comma splitting have documented shapes (22.587916ms)
+✔ status and matching fall back safely when Ollama is down or model is unavailable (215.355916ms)
+✔ model path rejects wrong prices, outside candidates, near ties, invalid JSON twice, and HTTP 500 (34.337542ms)
+✔ invalid JSON repair and unsupported think fallback are exercised against the stub (2.846041ms)
+✔ concurrent matching returns 409 and busy resets after completion (256.574625ms)
+✔ concurrent request bodies cannot both acquire the matching slot (336.752208ms)
+✔ client disconnect cancels remaining matching lines and promptly releases busy (1190.490625ms)
+✔ confirm rejects unknown products, units, zero, fractions, and excessive quantities (7.166917ms)
+✔ confirm exports base quantities, keeps skipped rows, and persists each export separately (4.779541ms)
+✔ L1 known catalogue names cannot be learned through confirm (1.607625ms)
+✔ L5 remember requires an explicitly confirmed matching row and name (5.886458ms)
+✔ learned names survive restart and select price/size variants, but ask without either (128.972833ms)
+✔ catalogue replacement validates first, rolls back errors, and safely ignores removed learned SKUs (10.483ms)
+▶ malformed JSON and invalid request shapes return 400 without crashing
+  ✔ /api/match malformed JSON (0.59275ms)
+  ✔ /api/match: null (0.576875ms)
+  ✔ /api/match: [] (0.444833ms)
+  ✔ /api/match: {} (0.486083ms)
+  ✔ /api/match: {"rows":null,"lines":4,"csv":5} (0.575792ms)
+  ✔ /api/match: {"rows":[null],"lines":[null]} (0.529416ms)
+  ✔ /api/confirm malformed JSON (0.522833ms)
+  ✔ /api/confirm: null (0.631666ms)
+  ✔ /api/confirm: [] (0.508209ms)
+  ✔ /api/confirm: {} (0.481292ms)
+  ✔ /api/confirm: {"rows":null,"lines":4,"csv":5} (0.502125ms)
+  ✔ /api/confirm: {"rows":[null],"lines":[null]} (1.204042ms)
+  ✔ /api/catalog malformed JSON (0.491166ms)
+  ✔ /api/catalog: null (0.3795ms)
+  ✔ /api/catalog: [] (0.416167ms)
+  ✔ /api/catalog: {} (0.449292ms)
+  ✔ /api/catalog: {"rows":null,"lines":4,"csv":5} (0.508375ms)
+  ✔ /api/catalog: {"rows":[null],"lines":[null]} (0.383583ms)
+✔ malformed JSON and invalid request shapes return 400 without crashing (11.414708ms)
+✔ oversized match and catalogue bodies return 413 with content type (38.851ms)
+✔ unknown routes, wrong methods, and traversal paths never expose project files (5.444ms)
+ℹ tests 35
+ℹ suites 0
+ℹ pass 35
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2595.004

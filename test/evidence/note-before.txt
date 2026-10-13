@@ -1,0 +1,52 @@
+✔ L1 known catalogue names cannot become new names merely because a variant is missing (15.029292ms)
+✔ L2 learned name selects the whole product family, including a different written price (1.427291ms)
+✔ L3 learned name requires a variant hint and respects a written pack size (1.265042ms)
+✔ L4 learned names still reject wrong prices, unknown units, and implausible quantities (1.534084ms)
+✔ removed learned SKU is ignored by both disk loading and direct matching (2.154583ms)
+✖ numeric item lines stay reviewable after Unicode digit normalisation (0.805834ms)
+✖ Hindi word quantities and explicit units do not disappear into grey notes (0.526333ms)
+✔ CSV preserves commas, quotes, CR/newlines and Devanagari while keeping skipped rows (0.302708ms)
+✔ CSV quotes a field containing only a carriage return separator (0.106209ms)
+✔ CSV formula injection is neutralised in every exported text column including skipped rows (0.311959ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 8
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 122.492833
+
+✖ failing tests:
+
+test at test/review-more.test.ts:64:1
+✖ numeric item lines stay reviewable after Unicode digit normalisation (0.805834ms)
+  AssertionError [ERR_ASSERTION]: zzfruit ２ ctn
+  
+  'note' !== 'item'
+  
+      at TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/review-more.test.ts:67:12)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'note',
+    expected: 'item',
+    operator: 'strictEqual'
+  }
+
+test at test/review-more.test.ts:73:1
+✖ Hindi word quantities and explicit units do not disappear into grey notes (0.526333ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  'note' !== 'item'
+  
+      at TestContext.<anonymous> (file:///Users/bipulchamoli/Desktop/untitled%20folder%202/parchimatch/test/review-more.test.ts:75:10)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'note',
+    expected: 'item',
+    operator: 'strictEqual'
+  }
