@@ -8,7 +8,7 @@ ParchiMatch Lite is a **local-first desktop tool**. "Deploying" means installing
 |---|---|---|
 | OS | macOS 13+, Windows 10+, or Linux | macOS (Apple M2) |
 | RAM | 8 GB (close other apps) | 8 GB |
-| Free disk | ~5 GB (model 3.3 GB + Ollama + headroom for swap) | |
+| Free disk | ~6 GB (model 4.3 GB + Ollama + headroom for swap) | |
 | Node.js | 24 or newer (runs TypeScript directly; needs `import.meta.main`) | 24.3, 24.21 |
 | Ollama | Recent (0.40 tested) | 0.40.3 |
 | Internet | Only for installation | |
@@ -94,9 +94,9 @@ launchctl load ~/Library/LaunchAgents/local.parchimatch.plist
 3. Match a sample order. The status chip should still say "Model ready", and lines needing the model should show the "local model" badge.
 4. Optionally confirm that nothing listens on a public interface:
    ```bash
-   lsof -iTCP:5178 -sTCP:LISTEN
+   lsof -nP -iTCP:5178 -sTCP:LISTEN
    ```
-   You should see `127.0.0.1:5178`.
+   You should see `127.0.0.1:5178` (`-n` shows the address instead of the name `localhost`).
 
 ## Updating
 

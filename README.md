@@ -44,13 +44,16 @@ Someone retypes every line into Tally, Busy or Marg. ParchiMatch Lite reads each
 
 ## Quick start
 
-**Requirements:** Node.js 24+, and for the model: [Ollama](https://ollama.com) plus about 5 GB of disk. Without Ollama, the app runs fuzzy matching only.
+**Requirements:** Node.js 24+, and for the model: [Ollama](https://ollama.com) plus about 6 GB of disk (the model is a 4.3 GB download). Without Ollama, the app runs fuzzy matching only.
 
 ```bash
 brew install node ollama && brew services start ollama
 ```
 ```bash
 ollama pull gemma4:e2b-it-qat
+```
+```bash
+git clone https://github.com/bipul724/parchimatch.git && cd parchimatch
 ```
 ```bash
 npm test
