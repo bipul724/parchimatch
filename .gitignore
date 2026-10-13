@@ -1,0 +1,42 @@
+# --- Shop data: never leaves this machine -------------------------------
+# Real catalogue, labelled orders and anything derived from them
+data/real/
+data/human/
+data/train/
+# Runtime data written by the app: uploaded catalogue, learned names, exports, logs
+data/app/
+# Evaluation outputs (every row of every run)
+results/
+
+# --- Dependencies and build output (none today, kept for safety) --------
+node_modules/
+dist/
+build/
+coverage/
+*.tsbuildinfo
+
+# --- Temporary and log files ---------------------------------------------
+*.log
+*.tmp
+*.upload
+*.swp
+*~
+
+# --- Secrets (API keys for optional services such as Tinker) -------------
+.env
+.env.*
+!.env.example
+
+# --- Model files (download them with `ollama pull`, never commit them) ---
+*.gguf
+*.safetensors
+
+# --- OS and editor files -------------------------------------------------
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.code-workspace
+
+# --- Local tool configuration --------------------------------------------
+.claude/
