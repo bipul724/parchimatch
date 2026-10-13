@@ -15,7 +15,7 @@ The working task list for ParchiMatch Lite. Read [context.md](context.md) first.
 
 ## Code tasks (coding agent)
 
-**Order of work for the coding agent (decided 13 Oct):** A7 → A8 → A3 → A5 → A4 → A9 (all done 13 Oct). No code tasks are open except A6 (blocked). A7 and A8 are small correctness fixes; A3 and A5 matter most for the demo; A4 feeds the human-written test set.
+**Order of work for the coding agent (decided 13 Oct):** A7 → A8 → A3 → A5 → A4 → A9 (all done 13 Oct). A6 not doing (C6). A10 (fresh-clone check) done; **A11 (clean-clone follow-ups) next**. A7 and A8 are small correctness fixes; A3 and A5 matter most for the demo; A4 feeds the human-written test set.
 
 ### A1. Numbers with commas: never split, read correctly, never guess: `done` (critical, revised 13 Oct)
 **Review (Claude, 13 Oct):** accepted. 170/170 tests; acceptance lines verified through the pipeline (`1,500 bag` → green 1500 bag; `1,5` → amber S16; `1,00,000` → amber S11; comma-separated items still split). Old-vs-new on all 440 practice/fixture/test lines × exact+fuzzy: **0 outcomes changed**. Locked test hash unchanged.
@@ -122,9 +122,45 @@ The working task list for ParchiMatch Lite. Read [context.md](context.md) first.
 - `npm test` passes.
 - The locked hash is unchanged.
 
-### A6. Misspelled product names that contain a number: `blocked`
-**Why:** `5 sttar 20 wala 5box` is now asked about instead of matched.
-**Blocked because:** the only evidence comes from the locked test set. Claude will look for the same pattern in `data/synthetic/dev.jsonl` and decide. Don't start this.
+### A11. Clean-clone follow-ups (from A10): `todo`
+**Why:** the fresh-clone check passed, but four rough edges would hit a judge or a new user.
+**Do (test-first for code):**
+1. **`src/label.ts`:** a missing or unreadable `--in` file stops with one line, e.g. `Can't read data/human/raw.txt: no such file. Save the order lines there first, one per line.` Exit 1, no stack trace. The README label paragraph says to save the lines in that file first.
+2. **`src/server.ts`:** an explicit `--catalog` that's missing or invalid stops with one plain message and no stack trace. A missing file reads like `Can't read catalogue data/real/catalog.csv: no such file.` An invalid one keeps today's list of row errors. Exit 1. The fallback rules don't change: an explicit `--catalog` still never falls back. In `docs/DEPLOY.md`, the `--catalog data/real/catalog.csv` example says it needs that file first (see "Set up a real shop").
+3. **`src/eval.ts` results:**
+   - Never overwrite a results file. If the name already exists, add `-2`, `-3`, … before `.json`.
+   - The low-disk warning names the default model correctly: `the default model (4.3 GB download)`, not "a 4B model (3.3 GB)".
+
+**Done when:**
+- Spawned-process tests cover: label with a missing `--in`; server with a missing `--catalog` file; two evals writing the same stamp into one folder, with both files kept.
+- `npm test` passes, and the locked hash is unchanged.
+- `docs/API.md` and `docs/EVALUATION.md` match the new behaviour.
+
+**Owner decisions already made:**
+- Disk is 6 GB. Claude fixed README and DEPLOY.
+- README Quick start has a `git clone` step. Claude added it.
+
+### A6. Misspelled product names that contain a number: `not doing` (decided 13 Oct, C6)
+**Decision (Claude):** no fix for this entry. The only catalogue name with a number is 5 Star (plus the "maggi 4 pack" alias). All six practice lines with it (d003, d123, d142, d172, d179, d214) spell it correctly ("5 star", "five star"), so the practice set has no evidence to build or check a fix against. The only example (`5 sttar 20 wala 5box`) is in the locked test set, which we never tune on. The line is safe: it's asked about, not wrongly accepted. It stays a known limitation.
+
+### A10. Fresh-clone check (no feature work): `done`
+**Review (Claude, 14 Oct):** accepted. All README and DEPLOY steps pass on a clean clone; 74 links checked, none broken. Fixed: model size 4.3 GB and the `lsof -nP` check. Its useful catch: its checks overlapped the C5 run and inflated the timings, so the latency was re-measured. Its open questions became A11 or were fixed by Claude (6 GB disk, clone step).
+**Why:** judges and readers will clone the repo and follow the README. Every command there must work on a clean copy, exactly as written.
+**Do:** clone `https://github.com/bipul724/parchimatch` into a new temporary folder outside this project. Follow README.md, then docs/DEPLOY.md, step by step, and run each command exactly as written:
+- `npm test`;
+- `npm run app` with Ollama running, then with `--url http://127.0.0.1:9` (Ollama unreachable);
+- `npm run eval:baselines`;
+- the README's eval command, with exact and fuzzy only;
+- `npm run label` on a 3-line file in the temporary folder.
+
+Also check every relative link in README.md and docs/*.md points to a file or heading that exists.
+**Rules:** don't change behaviour. Fix only:
+- a doc that's wrong;
+- a broken link;
+- a command that fails on a clean clone because of something missing from the repo.
+
+Anything else goes in the report as a question. Delete the temporary folder at the end.
+**Done when:** the report lists each step with pass or fail and the exact output of every failure, plus any fixes made test-first where code was involved.
 
 ---
 
@@ -136,8 +172,8 @@ The working task list for ParchiMatch Lite. Read [context.md](context.md) first.
 | C2 | Confirm the chosen model once on the locked test set; update all docs, site and README numbers | done: hybrid 88.2% / 0 dangerous / 2.2 s |
 | C3 | Update the landing site (`site/`) for the model change and new numbers; check every claim in `site/CLAIMS.md` | done: results, index, get-started, FAQ, CLAIMS updated; bake-off section added; canonical/OG/sitemap URLs set to GitHub Pages |
 | C4 | Review each agent task: read the diff, run `npm test`, run dev-set exact/fuzzy/hybrid, check docs, then `done` or send back | ongoing: A1–A5, A7–A9 done |
-| C5 | After A9 lands: one final locked-test run (exact, fuzzy, hybrid) and the final numbers everywhere, including the test count (site says 170; now 191) | todo |
-| C6 | Decide A6 using dev-set evidence only | todo |
+| C5 | Final locked-test run and numbers everywhere | done (13 Oct, commit 8f9a824): every outcome identical to C2 (hybrid 88.2% / 0 dangerous / 92.2% zero typing); latency 1.5/2.6 s from a speed-only re-run with nothing else running (rows identical; the C5 timings were inflated by the A10 checks running at the same time); test count 191 on the site |
+| C6 | Decide A6 using dev-set evidence only | done: not doing (no practice evidence; limitation stays) |
 | C7 | Draft the DEV post as an unpublished draft (only on your yes) | todo |
 | C8 | Score and lock the human-written test set when it arrives (after A4) | todo |
 | C9 | After A1: update the safety-rule count (15 → 16) and the comma limitation in `context.md` and `site/` (index, how-it-works, FAQ, CLAIMS); add a note on C01 in `docs/TEST_REPORT.md` | done: context, 5 site pages, CLAIMS, TEST_REPORT and SERVER_FINDINGS updated; S16 row added to the how-it-works rules table |

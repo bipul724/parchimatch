@@ -22,8 +22,8 @@ Everything an agent or collaborator needs to work on ParchiMatch Lite without re
 **Immediate next steps:**
 1. The owner commits the reviewed A7/A8/A3/A5/A4 batch.
 2. A9 is done and reviewed (eval numeric-flag checks; the labeller's status question has no default; 8 candidates sorted by name, numbers by value, no scores). It's waiting for the owner to commit.
-3. After A9: final locked-test run (C5), then update the numbers everywhere, including the test count (site says 170).
-4. Decide A6 on dev evidence only (C6).
+3. C5 is done: the final locked-test run matched C2, and the latency and test count (191) are updated in EVALUATION, DESIGN, the site and CLAIMS.
+4. C6 is done: A6 won't be fixed (no practice evidence); it stays a known limitation. A10 (fresh-clone check) is done. Next agent task: **A11** (clear errors for a missing `--in` or `--catalog` file; eval never overwrites results; disk warning text).
 5. Draft the DEV post as an unpublished draft (C7), only on the owner's yes.
 6. Remind the owner of U1 (browser checklist, which also covers `--open` and the base quantities), U2 (friends' orders), U3 (demo video), U4 (GitHub Pages).
 
@@ -141,13 +141,13 @@ order text → splitOrder → parse (code reads every number) → fuzzy match
 |---|---:|---:|---:|---:|---:|---:|
 | exact | 54.9% | 0 | 54.9% | 65.0% | 0 | – |
 | fuzzy | 84.3% | 0 | 84.3% | 46.3% | 0 | – |
-| llm-cand (model on every line) | 84.3% | 0 | 92.2% | 46.3% | 80 | 2.2 / 2.6 s |
-| **hybrid (the app)** | **88.2%** | **0** | **92.2%** | **43.8%** | **31** | **2.2 / 2.8 s** |
+| llm-cand (model on every line) | 84.3% | 0 | 92.2% | 46.3% | 80 | 1.5 / 3.2 s |
+| **hybrid (the app)** | **88.2%** | **0** | **92.2%** | **43.8%** | **31** | **1.5 / 2.6 s** |
 
-History: Qwen 4B hybrid was 88.2% (first run, before the test pass) and then 86.3% (after the test pass, which made one locked line, `5 sttar…`, ask). A1/A2 changed 0 outcomes on these sets, so the numbers above still hold. They'll be re-run in C5 after A3.
+History: Qwen 4B hybrid was 88.2% (first run, before the test pass) and then 86.3% (after the test pass, which made one locked line, `5 sttar…`, ask). **C5 final run (13 Oct, commit `8f9a824`, label `c5-final-8f9a824`):** every outcome is identical to the C2 Gemma run. Its timings were inflated because the agent's A10 checks ran at the same time. I re-ran llm-cand and hybrid once with nothing else running (label `c5-latency-idle-8f9a824`) to measure speed only. All 80 rows were identical again; the published latencies come from that run, and the busy-machine range is stated beside them. These are the final published numbers; don't run the locked set again unless code that affects matching changes.
 
 Also:
-- **170 tests** at the A1/A2 review (171 with the agent's in-progress A7).
+- **191 tests** after A9 (13 Oct).
 - **Adversarial run:** a fake model making random picks over the 320 practice lines (1,265 calls) let 0 wrong rows through.
 - **Learning demo:** sample order 03 went from 6 to 8 automatic lines and from 28.8 s to 5.3 s after learning two names (measured with the previous model).
 
