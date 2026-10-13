@@ -15,7 +15,7 @@ The working task list for ParchiMatch Lite. Read [context.md](context.md) first.
 
 ## Code tasks (coding agent)
 
-**Order of work for the coding agent (decided 13 Oct):** A7 → A8 → A3 → A5 → A4 (all done 13 Oct) → **A9 next**. A7 and A8 are small correctness fixes; A3 and A5 matter most for the demo; A4 feeds the human-written test set.
+**Order of work for the coding agent (decided 13 Oct):** A7 → A8 → A3 → A5 → A4 → A9 (all done 13 Oct). No code tasks are open except A6 (blocked). A7 and A8 are small correctness fixes; A3 and A5 matter most for the demo; A4 feeds the human-written test set.
 
 ### A1. Numbers with commas: never split, read correctly, never guess: `done` (critical, revised 13 Oct)
 **Review (Claude, 13 Oct):** accepted. 170/170 tests; acceptance lines verified through the pipeline (`1,500 bag` → green 1500 bag; `1,5` → amber S16; `1,00,000` → amber S11; comma-separated items still split). Old-vs-new on all 440 practice/fixture/test lines × exact+fuzzy: **0 outcomes changed**. Locked test hash unchanged.
@@ -103,7 +103,8 @@ The working task list for ParchiMatch Lite. Read [context.md](context.md) first.
 - Spawned-process tests cover a valueless `--catalog` and a non-numeric `--port` (clear message, non-zero exit, no stack trace).
 - `docs/API.md` notes it.
 
-### A9. Follow-ups from the A4/A8 review: `todo`
+### A9. Follow-ups from the A4/A8 review: `done`
+**Review (Claude, 13 Oct):** accepted. Checked by hand: `--limit` with no value, `--k 0`, `--min-score 2`, `--show -1` and `--ctx 1.5` each stop with one line and exit 1. `--limit 0` used to mean "all cases" and is now rejected; no doc used it. **Claude's change:** candidates now sort numbers by value (`localeCompare(…, { numeric: true })`), so Parle-G reads ₹5, ₹10, ₹20 instead of ₹10, ₹20, ₹5. I changed the test answers to match (Parle-G ₹5 is 6th on the fixture list) and added a test for the order. 191/191 pass.
 **Do:**
 1. **`src/eval.ts`:** `--methods`, `--limit`, `--k`, `--min-score`, `--min-margin`, `--ctx` and `--show` without a value fail like the other flags (`missingValue`). Values must also be valid, or eval exits 1 with a one-line message:
    - `--limit`, `--k`, `--ctx`: whole number ≥ 1;
@@ -134,8 +135,8 @@ The working task list for ParchiMatch Lite. Read [context.md](context.md) first.
 | C1 | Model bake-off on practice lines; choose default model | done: Gemma 4 E2B (see context.md) |
 | C2 | Confirm the chosen model once on the locked test set; update all docs, site and README numbers | done: hybrid 88.2% / 0 dangerous / 2.2 s |
 | C3 | Update the landing site (`site/`) for the model change and new numbers; check every claim in `site/CLAIMS.md` | done: results, index, get-started, FAQ, CLAIMS updated; bake-off section added; canonical/OG/sitemap URLs set to GitHub Pages |
-| C4 | Review each agent task: read the diff, run `npm test`, run dev-set exact/fuzzy/hybrid, check docs, then `done` or send back | ongoing: A1–A5, A7, A8 done; A9 next |
-| C5 | After A9 lands: one final locked-test run (exact, fuzzy, hybrid) and the final numbers everywhere, including the test count (site says 170; now 186) | todo |
+| C4 | Review each agent task: read the diff, run `npm test`, run dev-set exact/fuzzy/hybrid, check docs, then `done` or send back | ongoing: A1–A5, A7–A9 done |
+| C5 | After A9 lands: one final locked-test run (exact, fuzzy, hybrid) and the final numbers everywhere, including the test count (site says 170; now 191) | todo |
 | C6 | Decide A6 using dev-set evidence only | todo |
 | C7 | Draft the DEV post as an unpublished draft (only on your yes) | todo |
 | C8 | Score and lock the human-written test set when it arrives (after A4) | todo |

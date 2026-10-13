@@ -12,7 +12,7 @@ Everything an agent or collaborator needs to work on ParchiMatch Lite without re
 | Challenge | DEV Hacktoberfest 2026 Open-Source AI Challenge, **Week 2 "Side Hustle"** (challenge id 80). Tag `#hf26challenge` + `#devchallenge`. Writing quality is weighted most. The owner is registered for Week 2. |
 | Repo | `https://github.com/bipul724/parchimatch`, branch `main`. HEAD = `5b11d4e docs: detailed handoff in context.md` (pushed). |
 | Uncommitted work | Coding agent's **A7, A8, A3, A5, A4**: all **reviewed and accepted by Claude on 13 Oct** and waiting for the owner to commit. New files: `src/start.ts` (`npm run app`), `src/label.ts` (`npm run label`), `test/cli-flags.test.ts`, `test/start.test.ts`, `test/label.test.ts`. |
-| Tests | `npm test` → **186 pass, 0 fail** (Node 24.3.0). |
+| Tests | `npm test` → **191 pass, 0 fail** (Node 24.3.0) after A9. |
 | Locked test set | `data/synthetic/test.jsonl` unchanged (sha256 `a0c35e04…`, lock file `test.jsonl.lock.json`). |
 | Default model | `gemma4:e2b-it-qat` (since the 13 Oct bake-off). Pulled locally: gemma4:e2b-it-qat, gemma4:e4b-it-qat, gemma3:4b, qwen3.5:2b-q4_K_M, qwen3.5:4b-q4_K_M. |
 | Site | `site/` (static, 7 pages) + `.github/workflows/pages.yml`. GitHub Pages is **not enabled yet** (owner task U4). Canonical URLs point to `https://bipul724.github.io/parchimatch/`. |
@@ -21,7 +21,7 @@ Everything an agent or collaborator needs to work on ParchiMatch Lite without re
 
 **Immediate next steps:**
 1. The owner commits the reviewed A7/A8/A3/A5/A4 batch.
-2. The coding agent does **A9** (eval numeric-flag checks; labeller: status question with no default, and 8 alphabetical candidates without scores). Claude reviews it.
+2. A9 is done and reviewed (eval numeric-flag checks; the labeller's status question has no default; 8 candidates sorted by name, numbers by value, no scores). It's waiting for the owner to commit.
 3. After A9: final locked-test run (C5), then update the numbers everywhere, including the test count (site says 170).
 4. Decide A6 on dev evidence only (C6).
 5. Draft the DEV post as an unpublished draft (C7), only on the owner's yes.
@@ -89,7 +89,7 @@ order text → splitOrder → parse (code reads every number) → fuzzy match
 
 **Loop:** agent works a task → owner pastes the handoff report → Claude reviews and decides → Claude updates `task.md` and docs → owner commits the reviewed batch → the agent continues.
 
-**Agent work order:** A7 → A8 → A3 → A5 → A4 were all done on 13 Oct; **A9 is next**. A6 is blocked (Claude decides on dev evidence).
+**Agent work order:** A7 → A8 → A3 → A5 → A4 → A9 were all done on 13 Oct. No code tasks are open. A6 is blocked (Claude decides on dev evidence).
 
 ## 5. How Claude reviews an agent task (procedure that worked)
 
