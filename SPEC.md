@@ -1,5 +1,7 @@
 # ParchiMatch Lite — build spec
 
+> **Historical build plan (13 Oct 2026).** Numbers and model choices here are from early development. For the current state see [context.md](context.md); for current results see [docs/EVALUATION.md](docs/EVALUATION.md). The default model is now `gemma4:e2b-it-qat`.
+
 **One line:** a wholesaler pastes a messy order ("parle g 5/- 2 petti", "tata namak 5 petti"); a local model maps each line to the shop's own catalogue; code checks every number; the operator confirms; a clean CSV comes out for Tally/Busy/Marg entry.
 
 Target: Hacktoberfest Open-Source AI Challenge Week 2 (Side Hustle). Deadline Sun 18 Oct 11:59 PM PDT = **Mon 19 Oct 12:29 PM IST**. Publish **Sat 17 Oct**; Sunday is buffer.

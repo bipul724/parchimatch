@@ -2,10 +2,10 @@
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| Status chip says **"Model offline · fuzzy matching only"** | Ollama isn't running, or the model isn't pulled | `brew services start ollama`, then `ollama pull qwen3.5:4b-q4_K_M`. Check with `curl http://127.0.0.1:11434/api/tags` |
+| Status chip says **"Model offline · fuzzy matching only"** | Ollama isn't running, or the model isn't pulled | `brew services start ollama`, then `ollama pull gemma4:e2b-it-qat`. Check with `curl http://127.0.0.1:11434/api/tags` |
 | Ollama was upgraded but `curl …/api/version` shows the old version | The background service still runs the old binary | `brew services restart ollama` |
 | First amber line takes ~15 s | The model is loading into memory | Normal once per 15 idle minutes. Match a short order before a demo to warm it up |
-| Every model line takes 10–40 s | macOS is swapping (8 GB is tight) | Close browsers, Docker and other apps. Check Activity Monitor → Memory → Memory Pressure. Try `--model qwen3.5:2b-q4_K_M` |
+| Every model line takes 10–40 s | macOS is swapping (8 GB is tight) | Close browsers, Docker and other apps. Check Activity Monitor → Memory → Memory Pressure. Try the smaller, faster `--model qwen3.5:2b-q4_K_M` (same safety and accuracy in the bake-off) |
 | Free disk suddenly drops by several GB | macOS swap files grow under memory pressure and stay until restart | Restart the Mac. Keep ≥ 5 GB free |
 | "Already matching an order" | One order is matched at a time | Wait for it to finish |
 | `SyntaxError` on `import type`, or `.ts` files not running | Node older than 24 | `node -v` should show 24+. With nvm installed, the nvm Node may shadow Homebrew's; check `which node` |
@@ -38,5 +38,5 @@ sysctl vm.swapusage && df -h /
 To unload the model and free its ~3 GB immediately:
 
 ```bash
-curl -s http://127.0.0.1:11434/api/generate -d '{"model":"qwen3.5:4b-q4_K_M","keep_alive":0}'
+curl -s http://127.0.0.1:11434/api/generate -d '{"model":"gemma4:e2b-it-qat","keep_alive":0}'
 ```

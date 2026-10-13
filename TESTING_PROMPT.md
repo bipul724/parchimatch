@@ -8,7 +8,7 @@ You are a senior test engineer. Your job is to **find bugs** in ParchiMatch Lite
 
 ## What the project is
 
-ParchiMatch Lite turns messy Indian wholesale order lines ("parle g 5/- 2 petti", "tata namak 1 kg 5 ctn", "पारले जी 5 वाला 2 पेटी") into rows from a shop's own catalogue, then a human reviews and exports a CSV for billing software. It runs fully offline on an 8 GB M2 Mac with a local model (Qwen3.5-4B via Ollama).
+ParchiMatch Lite turns messy Indian wholesale order lines ("parle g 5/- 2 petti", "tata namak 1 kg 5 ctn", "पारले जी 5 वाला 2 पेटी") into rows from a shop's own catalogue, then a human reviews and exports a CSV for billing software. It runs fully offline on an 8 GB M2 Mac with a local model (Gemma 4 E2B via Ollama).
 
 The core safety idea: **a wrong row must never be auto-accepted.** Code owns every number (quantity, unit, price, pack size). The model only picks a product from a shortlist, and code validates its pick. Anything uncertain becomes an amber "needs review" row with a question for the operator.
 

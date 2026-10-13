@@ -14,7 +14,7 @@ npm start -- --catalog data/synthetic/catalog.csv
 | `--port` | `5178` | Port on 127.0.0.1; `0` asks the OS for a free port, printed at startup |
 | `--data` | `data/app` | Writable folder for learned names, uploaded catalogue and exports |
 | `--samples` | `data/synthetic/orders` | Folder of `*.txt` sample orders shown in the UI |
-| `--model` | `qwen3.5:4b-q4_K_M` | Ollama model name |
+| `--model` | `gemma4:e2b-it-qat` | Ollama model name (`qwen3.5:2b-q4_K_M` is a faster, smaller alternative) |
 | `--url` | `http://127.0.0.1:11434` | Ollama base URL |
 
 Paths are resolved relative to the project folder.
@@ -26,7 +26,7 @@ Paths are resolved relative to the project folder.
 Health and configuration. Checks with Ollama whether the model is pulled.
 
 ```json
-{ "catalog": "data/synthetic/catalog.csv", "items": 111, "learned": 2, "model": "qwen3.5:4b-q4_K_M", "modelReady": true }
+{ "catalog": "data/synthetic/catalog.csv", "items": 111, "learned": 2, "model": "gemma4:e2b-it-qat", "modelReady": true }
 ```
 
 ## `GET /api/catalog`

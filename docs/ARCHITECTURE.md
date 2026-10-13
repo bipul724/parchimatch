@@ -1,6 +1,6 @@
 # Architecture
 
-ParchiMatch Lite is a single local process: a Node.js HTTP server that serves a plain web page and runs the matching pipeline. A local language model (Qwen3.5-4B in Ollama) is called only for lines that plain text matching can't resolve. Nothing leaves the machine.
+ParchiMatch Lite is a single local process: a Node.js HTTP server that serves a plain web page and runs the matching pipeline. A local language model (Gemma 4 E2B in Ollama) is called only for lines that plain text matching can't resolve. Nothing leaves the machine.
 
 ## System overview
 
@@ -19,7 +19,7 @@ flowchart LR
     LRN["aliases_learned.csv"]
     EXP["exports/order-*.csv"]
   end
-  OLL["Ollama 0.40 · 127.0.0.1:11434<br/>qwen3.5:4b-q4_K_M (3.3 GB, on GPU)"]
+  OLL["Ollama 0.40 · 127.0.0.1:11434<br/>gemma4:e2b-it-qat (4.3 GB download, on GPU)"]
 
   UI -- fetch / NDJSON stream --> API
   API --> PIPE
@@ -141,13 +141,13 @@ parchimatch/
 | Measure | Value |
 |---|---|
 | Model load (cold) | ~15 s |
-| Model call, `hybrid`, locked synthetic test | p50 5.1 s, p95 6.7 s (measured under heavy swap; 4.2 / 4.8 s with memory free) |
-| Model call on every line (`llm-cand`) | p50 7.8 s, p95 23.3 s (under heavy swap) |
+| Model call, `hybrid`, locked synthetic test (Gemma 4 E2B) | p50 2.2 s, p95 2.8 s |
+| Model call on every line (`llm-cand`, Gemma 4 E2B) | p50 2.2 s, p95 2.6 s |
 | Model calls needed by `hybrid` | 31 of 80 test lines |
-| Sample order 03, 13 lines, first run | 28.8 s |
-| Same order after learning two names | 5.3 s |
+| Sample order 03, 13 lines, first run (previous model, Qwen3.5-4B) | 28.8 s |
+| Same order after learning two names (previous model) | 5.3 s |
 | Fuzzy / exact matching | well under 1 ms per line |
-| Model resident size | 3.1 GB, fully on GPU |
+| Model resident size (Gemma 4 E2B) | ≈3.6 GB, fully on GPU |
 
 Latency rises sharply when macOS swaps. Close other apps before demos and measurements.
 

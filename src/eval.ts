@@ -102,7 +102,7 @@ async function main() {
   const catalogPath = String(args.catalog ?? 'data/fixture/catalog.csv');
   const casesPath = String(args.cases ?? 'data/fixture/test.jsonl');
   const methods = String(args.methods ?? 'exact,fuzzy,llm-cand,hybrid').split(',') as Method[];
-  const model = String(args.model ?? 'qwen3.5:4b-q4_K_M');
+  const model = String(args.model ?? 'gemma4:e2b-it-qat');
   const url = String(args.url ?? 'http://127.0.0.1:11434');
   const outDir = String(args.out ?? 'results');
   const limit = args.limit ? Number(args.limit) : Infinity;

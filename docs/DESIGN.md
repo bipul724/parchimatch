@@ -48,7 +48,7 @@ A wrong row on an invoice costs real money and trust. So the tool must be **safe
 | Model sees fuzzy's top 8 | 43.8% | **2** | 40 |
 | **Hybrid + code checks** | **87.5%** | **0** | **11** |
 
-On the locked 80-line synthetic test (current code): hybrid 86.3% with 0 wrong rows and 31 model calls; fuzzy 84.3% with 0 wrong rows.
+On the locked 80-line synthetic test (current code, Gemma 4 E2B): hybrid 88.2% with 0 wrong rows and 31 model calls; fuzzy 84.3% with 0 wrong rows.
 **Takeaway:** the model alone was *worse* than fuzzy matching. It earns its place only as a second opinion on lines fuzzy can't resolve.
 
 ### D4. A model pick can confirm a weak match, but can't break a near-tie
@@ -66,12 +66,20 @@ On the locked 80-line synthetic test (current code): hybrid 86.3% with 0 wrong r
 **Guard rails** (each from a bug found in testing): only unknown names can be learned (L1); a name means the product, not one size (L2). See [RULES.md](RULES.md#3-learned-name-rules-srcreviewts-srcserverts).
 **Rejected for now:** fine-tuning as the main way to adapt. It's slower, needs data, and is invisible to the shopkeeper. Fine-tuning remains an option behind a measured gate ([EVALUATION.md](EVALUATION.md#fine-tuning-gate)).
 
-### D7. Qwen3.5-4B (4-bit) as the model
-| Option | Download | Verdict |
-|---|---|---|
-| `qwen3.5:4b-q4_K_M` | 3.3 GB | **Chosen.** Fits beside the app on 8 GB; Tinker can fine-tune the same base |
-| `qwen3.5:2b-q4_K_M` | 1.9 GB | Fallback if memory pressure is high |
-| `gemma4:e2b` / `e4b` | 4.3–4.6 / 6.1–6.6 GB | Too large next to the app on 8 GB |
+### D7. Gemma 4 E2B as the model, chosen by a bake-off
+**Chosen:** `gemma4:e2b-it-qat` (4.3 GB download, about 3.6 GB in memory).
+**How:** five local models were compared as the hybrid decider on the 320 practice lines, then the winner was confirmed once on the locked test ([EVALUATION.md](EVALUATION.md#model-bake-off)).
+
+| Option | In memory | Practice set: auto / no typing / p50 | Verdict |
+|---|---:|---|---|
+| `gemma4:e2b-it-qat` | 3.6 GB | 88.7% / **96.1%** / 3.1 s | **Default.** Best suggestions and zero-typing; eligible for the Gemma category |
+| `qwen3.5:2b-q4_K_M` | 1.6 GB | 88.7% / 94.6% / **2.5 s** | **Fast alternative** for busy or older machines; same safety |
+| `gemma3:4b` | 2.8 GB | 88.7% / 95.6% / 5.3 s | Equal, but slower |
+| `qwen3.5:4b-q4_K_M` | 3.1 GB | 88.2% / 95.6% / 5.2 s | Previous default; slightly worse and slower |
+| `gemma4:e4b-it-qat` | 6.0 GB | 37 s worst-case on 40 lines | Rejected: only 2.5 GB fit on the GPU next to the app on 8 GB RAM |
+
+**Correction:** an earlier version of this document dismissed Gemma 4 E2B as "too large" based on download sizes. Measurement showed it runs comfortably, and it's faster than the 4B models. Bigger models than this still don't work on 8 GB RAM; more disk space doesn't change that.
+**On the locked test:** hybrid with Gemma 4 E2B handles 88.2% of answerable lines automatically (previous model: 86.3%), with 0 wrong rows and 2.2 s per model call (previous: 5.1 s).
 **Settings:** temperature 0, fixed seed, thinking off, 2048-token context, JSON schema output, one repair retry.
 
 ### D8. Zero dependencies, plain files

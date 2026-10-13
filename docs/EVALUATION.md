@@ -66,27 +66,45 @@ How the synthetic data was made, and its limits, are in [`data/synthetic/DATA_CA
 
 ## Results
 
-### Locked synthetic test: current code (80 lines, 13 Oct 2026, after the external test pass)
+### Model bake-off
+
+On 13 Oct 2026, with more disk space available, five local models were compared as the `hybrid` decider on the **320 practice lines** (`data/synthetic/dev.jsonl`). The winner was then confirmed **once** on the locked test set below. Choosing among several models directly on the locked test would itself be tuning on the test set.
+
+| Model | Memory in use | Auto-accept acc | Dangerous | Zero typing | Suggestion acc | Model calls | Model p50 / p95 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| **gemma4:e2b-it-qat** (chosen) | 3.6 GB | 88.7% | 0 | **96.1%** | **65.2%** | 113 | 3.1 s / 9.2 s |
+| qwen3.5:2b-q4_K_M | 1.6 GB | 88.7% | 0 | 94.6% | 52.2% | 113 | **2.5 s / 3.3 s** |
+| gemma3:4b | 2.8 GB | 88.7% | 0 | 95.6% | 60.9% | 113 | 5.3 s / 8.4 s |
+| qwen3.5:4b-q4_K_M (previous default) | 3.1 GB | 88.2% | 0 | 95.6% | 62.5% | 113 | 5.2 s / 8.4 s |
+| gemma4:e4b-it-qat (speed check, first 40 lines only) | 6.0 GB (2.5 GB on GPU) | – | 0 | – | – | 12 | 5.6 s / **37.0 s** |
+
+- **RAM, not disk, is the limit.** The ~7.5B-parameter Gemma 4 E4B didn't fit on the GPU beside the app on 8 GB RAM, and its slow lines took 37 s.
+- **The previous default was the weakest of the four that fit.**
+- **The top three are within 1–3 lines of each other.** The rule fixed before the run (zero dangerous → most auto-accepted → fastest) favoured Qwen3.5 2B. The owner chose **Gemma 4 E2B** for its better operator-facing numbers (zero typing, suggestion accuracy) and for the Gemma partner category. Qwen3.5 2B remains the documented fast alternative (`--model qwen3.5:2b-q4_K_M`).
+
+### Locked synthetic test: current code and default model (80 lines, 13 Oct 2026)
 
 | Method | Auto-accept acc | Dangerous | Zero typing | Flag recall | Review load | Model calls | Model p50 / p95 |
 |---|---:|---:|---:|---:|---:|---:|---:|
 | exact | 54.9% | 0 | 54.9% | 100% | 65.0% | 0 | – |
 | fuzzy | 84.3% | 0 | 84.3% | 100% | 46.3% | 0 | – |
-| llm-cand | 82.4% | 0 | 88.2% | 100% | 47.5% | 80 | 7.8 s / 23.3 s |
-| **hybrid** | **86.3%** | **0** | **92.2%** | **100%** | **45.0%** | **31** | **5.1 s / 6.7 s** |
+| llm-cand | 84.3% | 0 | 92.2% | 100% | 46.3% | 80 | 2.2 s / 2.6 s |
+| **hybrid** | **88.2%** | **0** | **92.2%** | **100%** | **43.8%** | **31** | **2.2 s / 2.8 s** |
 
-Model: `qwen3.5:4b-q4_K_M`, temperature 0, thinking off, top-8 candidates, MacBook Air M2 8 GB. The Mac was swapping heavily during this run (about 8 GB of swap), so latency is pessimistic. `llm-cand` had one model error and 98.8% valid JSON on the first try; `hybrid` had none.
+Model: `gemma4:e2b-it-qat`, temperature 0, thinking off, top-8 candidates, MacBook Air M2 8 GB. 100% valid JSON on the first try and no model errors in either model method.
 
-**Reading it honestly:** the safety design held, since no method let a wrong row through. The model's gain over fuzzy is modest: one more automatic line (`thmusup 2ltr pc 6`) and three correct one-tap suggestions (`amul butter aadha kilo`, `everest halddi`, `frooti 10 ka`). It missed `Sarf 500gm` and misread Devanagari `पारले जी 20 वाली` as Frooti. On `5 sttar 20 wala 5box` the parser no longer finds product words, and the model's suggestion was nonsense (Aashirvaad Atta). All three were flagged, so they're safe but cost the operator a choice.
+**Reading it honestly:** no method let a wrong row through. With Gemma 4 E2B, hybrid auto-accepts two more lines than fuzzy alone (`thmusup 2ltr pc 6`, `Sarf 500gm 2 Ctn`) and gives two correct one-tap suggestions (`everest halddi 100gm`, `frooti 10 ka`). It suggested the wrong size for `amul butter aadha kilo` (100 g instead of 500 g), misread Devanagari `पारले जी 20 वाली` as Frooti, and gave a nonsense suggestion on `5 sttar 20 wala 5box`, where the parser finds no product words. All three were flagged, so they're safe but cost the operator a choice.
 
-**What changed since the first run.** The external test pass ([TEST_REPORT.md](TEST_REPORT.md)) fixed 25 safety and robustness findings. One of them made the parser stricter about numbers followed by unknown words. That costs one locked-test line (`5 sttar…`, now asked about) and is why every method is slightly lower than before. That line was **not** fixed afterwards, because it comes from the locked test set.
+### Earlier locked-test runs (history)
 
-| Method (first run, before the test pass) | Auto-accept acc | Dangerous | Zero typing | Model calls | Model p50 / p95 |
-|---|---:|---:|---:|---:|---:|
-| exact | 52.9% | 0 | 52.9% | 0 | – |
-| fuzzy | 86.3% | 0 | 86.3% | 0 | – |
-| llm-cand | 86.3% | 0 | 92.2% | 80 | 8.4 s / 15.3 s |
-| hybrid | 88.2% | 0 | 94.1% | 30 | 4.2 s / 4.8 s |
+Same 80 lines, earlier code or model:
+
+| Run | exact | fuzzy | llm-cand | hybrid | hybrid zero typing | hybrid p50 / p95 | Dangerous |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| After the external test pass, `qwen3.5:4b-q4_K_M` (Mac swapping heavily) | 54.9% | 84.3% | 82.4% | 86.3% | 92.2% | 5.1 s / 6.7 s | 0 |
+| First run, before the test pass, `qwen3.5:4b-q4_K_M` | 52.9% | 86.3% | 86.3% | 88.2% | 94.1% | 4.2 s / 4.8 s | 0 |
+
+The external test pass ([TEST_REPORT.md](TEST_REPORT.md)) fixed 25 safety and robustness findings. One of them made the parser stricter about numbers followed by unknown words, which costs one locked-test line (`5 sttar…`, now asked about). That line was **not** fixed afterwards, because it comes from the locked test set.
 
 ### Development set (40 hand-written lines): how the design evolved
 
@@ -102,7 +120,7 @@ These numbers are from data the design was tuned on, so they show the direction 
 
 ## Fine-tuning gate
 
-Fine-tune (e.g. a LoRA of `Qwen/Qwen3.5-4B` on Tinker) **only if all hold**:
+Fine-tune (e.g. a LoRA of `Qwen/Qwen3.5-4B` on Tinker, which would then replace the default model only if it beats Gemma 4 E2B) **only if all hold**:
 
 1. Base `hybrid` leaves at least 5 answerable test lines flagged or wrong, clustered in a few tags (e.g. `hindi_name`, `colour_name`, `devanagari`).
 2. A toy adapter has been downloaded, converted, and loaded in Ollama on the target machine.

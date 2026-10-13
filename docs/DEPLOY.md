@@ -24,7 +24,7 @@ brew install node ollama
 brew services start ollama
 ```
 ```bash
-ollama pull qwen3.5:4b-q4_K_M
+ollama pull gemma4:e2b-it-qat
 ```
 
 Then get the project folder onto the machine (clone or copy) and check it:

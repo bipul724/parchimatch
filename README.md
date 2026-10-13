@@ -24,7 +24,7 @@ Someone retypes every line into Tally, Busy or Marg. ParchiMatch Lite reads each
 ## Highlights
 
 - **Safety first.** Code reads every quantity, unit, price and pack size. The local model only picks *which product*, and 15 rules check its pick ([RULES.md](docs/RULES.md)). On the locked synthetic test, no method let a wrong row through.
-- **Hybrid matching.** Fuzzy text matching handles most lines instantly. The model (Qwen3.5-4B via Ollama) is asked only when fuzzy can't name the product: 31 of 80 test lines, about 5 s each.
+- **Hybrid matching.** Fuzzy text matching handles most lines instantly. The model (Gemma 4 E2B via Ollama, chosen in a [5-model bake-off](docs/EVALUATION.md#model-bake-off)) is asked only when fuzzy can't name the product: 31 of 80 test lines, about 2 s each.
 - **Learns the shop's shorthand.** Correct "lais peela" once, tick *Remember*, and it matches automatically next time. No training needed.
 - **Hinglish and Devanagari.** `petti`, `darjan`, `nag`, `bora`, `do petti`, `5 wala`, `10 ka`, `पारले जी 5 वाला 2 पेटी`.
 - **Private by construction.** Binds to 127.0.0.1, has no cloud calls, and every file is a CSV on the shop's disk.
@@ -37,20 +37,20 @@ Someone retypes every line into Tally, Busy or Marg. ParchiMatch Lite reads each
 |---|---:|---:|---:|---:|
 | Exact match | 54.9% | 0 | 54.9% | 0 |
 | Fuzzy match | 84.3% | 0 | 84.3% | 0 |
-| Model on every line | 82.4% | 0 | 88.2% | 80 |
-| **Hybrid (the app)** | **86.3%** | **0** | **92.2%** | **31** |
+| Model on every line | 84.3% | 0 | 92.2% | 80 |
+| **Hybrid (the app)** | **88.2%** | **0** | **92.2%** | **31** |
 
-\*Automatic, or one tap to confirm a correct pre-filled suggestion. MacBook Air M2, 8 GB, current code (after the [external test pass](docs/TEST_REPORT.md)). The data is **synthetic**; read the [data card](data/synthetic/DATA_CARD.md) and [EVALUATION.md](docs/EVALUATION.md) before quoting these.
+\*Automatic, or one tap to confirm a correct pre-filled suggestion. Model `gemma4:e2b-it-qat`, MacBook Air M2, 8 GB, current code (after the [external test pass](docs/TEST_REPORT.md)). The data is **synthetic**; read the [data card](data/synthetic/DATA_CARD.md) and [EVALUATION.md](docs/EVALUATION.md) before quoting these.
 
 ## Quick start
 
-**Requirements:** Node.js 24+, and for the model: [Ollama](https://ollama.com) plus about 4 GB of disk. Without Ollama, the app runs fuzzy matching only.
+**Requirements:** Node.js 24+, and for the model: [Ollama](https://ollama.com) plus about 5 GB of disk. Without Ollama, the app runs fuzzy matching only.
 
 ```bash
 brew install node ollama && brew services start ollama
 ```
 ```bash
-ollama pull qwen3.5:4b-q4_K_M
+ollama pull gemma4:e2b-it-qat
 ```
 ```bash
 npm test

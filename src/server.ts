@@ -16,7 +16,7 @@ import { normalize, parse } from './text.ts';
 import { ensureDir, parseArgs } from './util.ts';
 
 // Local review app. Binds to 127.0.0.1 only; nothing leaves the machine except calls to the local Ollama.
-// Usage: npm start -- --catalog data/synthetic/catalog.csv [--port 5178] [--data data/app] [--model qwen3.5:4b-q4_K_M]
+// Usage: npm start -- --catalog data/synthetic/catalog.csv [--port 5178] [--data data/app] [--model gemma4:e2b-it-qat]
 
 const args = parseArgs(process.argv.slice(2));
 const root = resolve(import.meta.dirname, '..');
@@ -24,7 +24,7 @@ const port = Number(args.port ?? 5178);
 const dataDir = resolve(root, String(args.data ?? 'data/app'));
 const samplesDir = resolve(root, String(args.samples ?? 'data/synthetic/orders'));
 const learnedPath = join(dataDir, 'aliases_learned.csv');
-const model = String(args.model ?? 'qwen3.5:4b-q4_K_M');
+const model = String(args.model ?? 'gemma4:e2b-it-qat');
 const ollamaUrl = String(args.url ?? 'http://127.0.0.1:11434');
 
 let catalogPath = resolve(root, String(args.catalog ?? 'data/synthetic/catalog.csv'));
