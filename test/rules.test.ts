@@ -1,4 +1,4 @@
-// Purpose: give every documented S1–S15 rule an executable example and guard unsafe edge cases.
+// Purpose: give every documented S1–S16 rule an executable example and guard unsafe edge cases.
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
@@ -88,6 +88,14 @@ test('S14 requested unit must be one the product is sold in', () => {
 });
 test('S15 carton orders need a known carton size', () => {
   review(finish('clinic plus 2 petti', 'CLINIC-1'), /units per carton unknown/);
+});
+test('S16 an unclear number with a comma is asked about, even when a proposal supplies a quantity', () => {
+  const r = finish('parle g 1,5 pkt', 'PRLG-5');
+  review(r, /number "1,5" is unclear/);
+  assert.equal(r.question, 'What does "1,5" mean?');
+  const m = finish('parle g 1,5 pkt', 'PRLG-5', { qty: 5, unit: 'packet', evidence: 'parle g' }, true);
+  review(m, /number "1,5" is unclear/);
+  assert.equal(m.question, 'What does "1,5" mean?');
 });
 
 test('S7 a product number does not erase a different order unit', () => {

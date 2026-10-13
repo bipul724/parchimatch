@@ -36,6 +36,7 @@ export interface Parsed {
   priceHints?: number[]; // every explicit price, so contradictory hints cannot be silently discarded
   sizeHints?: Size[]; // every explicit size, including its dimension
   unknownUnit?: string | null; // word after a bare quantity that isn't a known unit ("10 jodi")
+  unclearNumber?: string | null; // digit-comma-digit that isn't a well-formed grouping ("1,5", "2,50"); never read as a number (S16)
 }
 
 export interface Gold {

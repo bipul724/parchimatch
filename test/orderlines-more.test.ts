@@ -16,15 +16,13 @@ test('order splitting keeps quantity-first lines and discards empty separator fr
   assert.deepEqual(splitOrder(' \n,;\r\n'), []);
 });
 
-test('known limitation: a thousands comma breaks one quantity into separate item fragments', (t) => {
+test('C01 fixed: a thousands comma stays inside one item and reads as one quantity', () => {
   const input = 'maggi 1,000 pcs';
   const parts = splitOrder(input);
-  // This records the suspected defect, not a desirable contract. A human intended one item.
-  assert.deepEqual(parts, ['maggi 1', '000 pcs']);
-  assert.notDeepEqual(parts, [input]);
-  assert.equal(parse(parts[0]).qty, 1);
-  assert.equal(parse(parts[1]).qty, 0);
-  t.diagnostic('Confirmed known limitation: 1,000 becomes quantities 1 and 0 in two fragments; no automatic repair is claimed.');
+  assert.deepEqual(parts, [input]);
+  assert.equal(parse(parts[0]).qty, 1000);
+  assert.equal(parse(parts[0]).unit, 'piece');
+  assert.equal(parse(parts[0]).productText, 'maggi');
 });
 
 test('known limitation: a comma within a product description separates its name from pack and quantity', (t) => {

@@ -43,6 +43,8 @@ export function finalize(p: Proposal, parsed: Parsed, catalog: Map<string, Catal
 
   if (p.status === 'needs_review') flag('decider unsure', askProduct);
   else if (!item) flag('no product chosen', askProduct);
+  // S16: asked before "How many?", because the unclear number is usually the quantity.
+  if (parsed.unclearNumber) flag(`number "${parsed.unclearNumber}" is unclear`, `What does "${parsed.unclearNumber}" mean?`);
 
   if (parsed.pairs.length > 1) {
     const r = item ? resolvePairs(parsed, item) : null;

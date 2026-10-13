@@ -59,6 +59,10 @@ export function normalize(raw: string): string {
   }
   // Invisible formatting inside a number must not turn 22 into two separate 2s.
   s = s.replace(/(?<=[\d.\-−])[\u200b\u200c\u200d\ufeff]+(?=[\d.])/g, '');
+  // Well-formed groupings are one number: Western 1,500 / 1,250,000 and Indian 1,00,000 / 12,34,567.
+  // Stripping the comma as punctuation read "maggi 2,500 pkt" as 500 packets. Any other digit,digit stays one
+  // token ("1,5") that is never a number; parse() records it as unclearNumber and S16 asks.
+  s = s.replace(/(?<!\d|\d[.,])(?:\d{1,3}(?:,\d{3})+|\d{1,2}(?:,\d{2})+,\d{3})(?!\d|[.,]\d)/g, (m) => m.replace(/,/g, ''));
   for (const [dev, lat] of Object.entries(DEVANAGARI_WORDS)) s = s.split(dev).join(` ${lat} `);
   s = s.replace(/₹/g, ' rs ');
   s = s.replace(/(\d)\s*\/-/g, '$1 rs ');
@@ -67,7 +71,8 @@ export function normalize(raw: string): string {
   s = s.replace(/(?<!\d)\.|\.(?!\d)/g, ' ');
   s = s.replace(/−/g, '-');
   s = s.replace(/(?<=[a-zऀ-ॿ])-(?=\d)|-(?!\d)/g, ' ');
-  s = s.replace(/[^a-z0-9.\-ऀ-ॿ]+/g, ' ');
+  s = s.replace(/[^a-z0-9.,\-ऀ-ॿ]+/g, ' ');
+  s = s.replace(/(?<!\d),|,(?!\d)/g, ' ');
   s = s.replace(/(^|\s)\.+|\.+(?=\s|$)/g, ' ');
   return s.replace(/\s+/g, ' ').trim();
 }
@@ -115,6 +120,15 @@ export function parse(raw: string, opts: ParseOptions = {}): Parsed {
       }
     }
   }
+  // "1,5" could mean 1.5, 15 or 1 and 5. Neither it nor the unit/price/size word after it may be read as anything.
+  let unclearNumber: string | null = null;
+  tokens.forEach((t, i) => {
+    if (!/\d,\d/.test(t)) return;
+    unclearNumber ??= t;
+    used[i] = true;
+    const next = tokens[i + 1];
+    if (next && (UNIT_WORDS[next] || SIZE_WORDS[next] || PRICE_AFTER_NUMBER.has(next))) used[i + 1] = true;
+  });
   let priceHint: number | null = null;
   let sizeHint: Size | null = null;
   const priceHints: number[] = [];
@@ -206,7 +220,7 @@ export function parse(raw: string, opts: ParseOptions = {}): Parsed {
   }
 
   const productText = tokens.filter((t, i) => (inName[i] || !used[i]) && !FILLER.has(t)).join(' ');
-  return { tokens, productText, qty, unit, pairs: distinct, priceHint, sizeHint, priceHints, sizeHints, unknownUnit };
+  return { tokens, productText, qty, unit, pairs: distinct, priceHint, sizeHint, priceHints, sizeHints, unknownUnit, unclearNumber };
 }
 
 // True when the order text itself contains this quantity (as digits or a Hindi number word).
