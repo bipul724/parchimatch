@@ -16,7 +16,7 @@ import { normalize, parse } from './text.ts';
 import { ensureDir, parseArgs } from './util.ts';
 
 // Local review app. Binds to 127.0.0.1 only; nothing leaves the machine except calls to the local Ollama.
-// Usage: npm start -- --catalog data/synthetic/catalog.csv [--port 5178] [--data data/app] [--model gemma4:e2b-it-qat]
+// Usage: npm start [-- --catalog data/synthetic/catalog.csv] [--port 5178] [--data data/app] [--model gemma4:e2b-it-qat]
 
 const args = parseArgs(process.argv.slice(2));
 const root = resolve(import.meta.dirname, '..');
@@ -27,8 +27,32 @@ const learnedPath = join(dataDir, 'aliases_learned.csv');
 const model = String(args.model ?? 'gemma4:e2b-it-qat');
 const ollamaUrl = String(args.url ?? 'http://127.0.0.1:11434');
 
-let catalogPath = resolve(root, String(args.catalog ?? 'data/synthetic/catalog.csv'));
-let catalog: CatalogItem[] = loadCatalog(catalogPath);
+// An explicit --catalog always wins. Otherwise reuse a catalogue uploaded in the app, which is saved to
+// <data>/catalog.csv: restarting used to silently bring back the synthetic catalogue (HTTP-08).
+function startupCatalog(): { path: string; items: CatalogItem[]; why: string } {
+  if (args.catalog !== undefined) {
+    const path = resolve(root, String(args.catalog));
+    return { path, items: loadCatalog(path), why: '--catalog' };
+  }
+  const uploaded = join(dataDir, 'catalog.csv');
+  let why = 'default: no --catalog and nothing uploaded';
+  if (existsSync(uploaded)) {
+    try {
+      const items = loadCatalog(uploaded);
+      if (items.length) return { path: uploaded, items, why: 'uploaded in the app' };
+      throw new Error('it has no items');
+    } catch (e) {
+      console.warn(`warning: saved catalogue ${uploaded} can't be used, loading the default instead.\n${(e as Error).message}`);
+      why = 'default: saved upload unusable';
+    }
+  }
+  const path = resolve(root, 'data/synthetic/catalog.csv');
+  return { path, items: loadCatalog(path), why };
+}
+
+const startup = startupCatalog();
+let catalogPath = startup.path;
+let catalog: CatalogItem[] = startup.items;
 let ctx: Ctx = makeCtx(catalog, { llm: { url: ollamaUrl, model, think: false, numCtx: 2048 } });
 let learned = loadLearned(learnedPath, ctx.index);
 let activeMatch: AbortController | null = null;
@@ -187,5 +211,5 @@ const server = createServer(async (req, res) => {
 server.listen(port, '127.0.0.1', async () => {
   const address = server.address();
   console.log(`ParchiMatch Lite → http://127.0.0.1:${address && typeof address !== 'string' ? address.port : port}`);
-  console.log(`catalogue ${catalog.length} items (${catalogPath.replace(`${root}/`, '')}) · learned names ${learned.size} · model ${model} ${(await modelReady()) ? 'ready' : 'NOT available, fuzzy only'}`);
+  console.log(`catalogue ${catalog.length} items (${catalogPath.replace(`${root}/`, '')} · ${startup.why}) · learned names ${learned.size} · model ${model} ${(await modelReady()) ? 'ready' : 'NOT available, fuzzy only'}`);
 });

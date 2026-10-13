@@ -110,6 +110,18 @@ test('status, static assets, samples, and NDJSON comma splitting have documented
   assert.equal(chats().length, 0);
 });
 
+test('numbers with commas stay in one row through the server: grouped numbers are read, unclear ones asked (A1, S16)', async () => {
+  stub.reset();
+  const events = await match({ text: 'fortune oil 5 litre 1,200 pcs, tata namak 1 kg 1,500 pkt\ntata namak 1 kg 1,5 pkt' });
+  assert.deepEqual(events.map((event) => event.type), ['start', 'row', 'row', 'row', 'done']);
+  assert.deepEqual([events[1].row.status, events[1].row.sku, events[1].row.qty, events[1].row.unit], ['ok', 'OIL5', 1200, 'piece']);
+  assert.deepEqual([events[2].row.status, events[2].row.sku, events[2].row.qty, events[2].row.unit], ['ok', 'SALT1', 1500, 'packet']);
+  assert.equal(events[3].row.status, 'needs_review');
+  assert.equal(events[3].row.question, 'What does "1,5" mean?');
+  assert.notEqual(events[3].row.qty, 5);
+  assert.equal(chats().length, 0);
+});
+
 test('status and matching fall back safely when Ollama is down or model is unavailable', async () => {
   stub.setModels([]);
   assert.equal((await (await fetch(url + '/api/status')).json()).modelReady, false);
