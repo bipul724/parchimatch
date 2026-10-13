@@ -6,7 +6,7 @@ import { availableModels, loadedModels } from './llm.ts';
 import { makeCtx, METHODS, run } from './methods.ts';
 import type { Method } from './methods.ts';
 import type { Case, MethodResult } from './types.ts';
-import { ensureDir, parseArgs, percentile, readJsonl, sha256 } from './util.ts';
+import { ensureDir, missingValue, parseArgs, percentile, readJsonl, sha256 } from './util.ts';
 
 type Outcome = 'auto_correct' | 'auto_wrong' | 'flagged_answerable' | 'flagged_correctly' | 'missed_flag';
 
@@ -99,6 +99,14 @@ function byTag(rows: Scored[]) {
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
+  const usageError = missingValue(args, {
+    catalog: 'data/real/catalog.csv', cases: 'data/synthetic/dev.jsonl', model: 'gemma4:e2b-it-qat',
+    url: 'http://127.0.0.1:11434', out: 'results', label: 'my-change',
+  });
+  if (usageError) {
+    console.error(usageError);
+    process.exit(1);
+  }
   const catalogPath = String(args.catalog ?? 'data/fixture/catalog.csv');
   const casesPath = String(args.cases ?? 'data/fixture/test.jsonl');
   const methods = String(args.methods ?? 'exact,fuzzy,llm-cand,hybrid').split(',') as Method[];

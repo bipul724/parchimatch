@@ -13,12 +13,20 @@ import { checkConfirmed, exportCsv, itemLabel, matchLine, nameIsKnown } from './
 import type { ConfirmedRow } from './review.ts';
 import type { CatalogItem } from './types.ts';
 import { normalize, parse } from './text.ts';
-import { ensureDir, parseArgs } from './util.ts';
+import { ensureDir, missingValue, parseArgs } from './util.ts';
 
 // Local review app. Binds to 127.0.0.1 only; nothing leaves the machine except calls to the local Ollama.
 // Usage: npm start [-- --catalog data/synthetic/catalog.csv] [--port 5178] [--data data/app] [--model gemma4:e2b-it-qat]
 
 const args = parseArgs(process.argv.slice(2));
+const usageError = missingValue(args, {
+  catalog: 'data/real/catalog.csv', data: 'data/app', samples: 'data/synthetic/orders',
+  model: 'gemma4:e2b-it-qat', url: 'http://127.0.0.1:11434', port: '5178',
+}) ?? (args.port !== undefined && !(/^\d+$/.test(String(args.port)) && Number(args.port) <= 65535) ? '--port must be a whole number from 0 to 65535, e.g. --port 5178' : null);
+if (usageError) {
+  console.error(usageError);
+  process.exit(1);
+}
 const root = resolve(import.meta.dirname, '..');
 const port = Number(args.port ?? 5178);
 const dataDir = resolve(root, String(args.data ?? 'data/app'));
@@ -38,9 +46,7 @@ function startupCatalog(): { path: string; items: CatalogItem[]; why: string } {
   let why = 'default: no --catalog and nothing uploaded';
   if (existsSync(uploaded)) {
     try {
-      const items = loadCatalog(uploaded);
-      if (items.length) return { path: uploaded, items, why: 'uploaded in the app' };
-      throw new Error('it has no items');
+      return { path: uploaded, items: loadCatalog(uploaded), why: 'uploaded in the app' };
     } catch (e) {
       console.warn(`warning: saved catalogue ${uploaded} can't be used, loading the default instead.\n${(e as Error).message}`);
       why = 'default: saved upload unusable';

@@ -23,7 +23,7 @@ FORT-5L,Fortune Soyabean Oil,Fortune,5 L jar,760,piece,,fortune oil|fortune
 | `units_per_carton` | | Positive whole number. Empty = unknown, so carton orders for this item always ask |
 | `aliases` | | `|`-separated names **the shop's own system already uses**. Don't add misspellings or Hindi names here; they're what the tool should handle, and the operator teaches them through "Remember" |
 
-Loading reports every problem with its row number (missing SKU or name, duplicate SKU, unknown unit, non-numeric MRP, bad carton size), and nothing loads until all are fixed.
+Loading reports every problem with its row number (missing SKU or name, duplicate SKU, unknown unit, non-numeric MRP, bad carton size), and nothing loads until all are fixed. A file with no item rows (header only, or empty) is rejected with `catalogue has no items`; this applies to `--catalog`, uploads in the app, the saved upload at startup and the eval harness.
 
 ## Labelled order lines (JSONL)
 

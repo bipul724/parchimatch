@@ -10,6 +10,8 @@ export function loadCatalog(path: string): CatalogItem[] {
   const rows = parseCsv(readFileSync(path, 'utf8'));
   const seen = new Set<string>();
   const errors: string[] = [];
+  // A header-only upload would otherwise replace a working catalogue with an empty one.
+  if (rows.length === 0) errors.push('catalogue has no items');
   const items = rows.map((r, i) => {
     const line = i + 2;
     const sku = r.sku;

@@ -345,6 +345,10 @@ test('catalogue replacement validates first, rolls back errors, and safely ignor
   assert.equal(response.status, 400);
   assert.match((await response.json()).error, /row 2: missing name/);
   assert.deepEqual(await (await fetch(url + '/api/catalog')).json(), before);
+  response = await post('/api/catalog', { csv: CSV.split('\n')[0] + '\n' });
+  assert.equal(response.status, 400);
+  assert.match((await response.json()).error, /catalogue has no items/);
+  assert.deepEqual(await (await fetch(url + '/api/catalog')).json(), before);
   assert.equal((await match({ text: 'parle g 5 rs 2 ctn' }))[1].row.sku, 'PRLG5');
   const reduced = CSV.split('\n').filter((line) => !line.startsWith('LAYS')).join('\n');
   response = await post('/api/catalog', { csv: reduced });

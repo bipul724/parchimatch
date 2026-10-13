@@ -75,6 +75,15 @@ export function mulberry32(seed: number): () => number {
   };
 }
 
+// A value flag written without a value parses as `true`, and String(true) became the file "true".
+// Returns the first such flag's message ("--catalog needs a value, e.g. …"), or null.
+export function missingValue(args: Record<string, string | boolean>, examples: Record<string, string>): string | null {
+  for (const [flag, example] of Object.entries(examples)) {
+    if (args[flag] === true || args[flag] === '') return `--${flag} needs a value, e.g. --${flag} ${example}`;
+  }
+  return null;
+}
+
 export function parseArgs(argv: string[]): Record<string, string | boolean> {
   const out: Record<string, string | boolean> = {};
   for (let i = 0; i < argv.length; i++) {
