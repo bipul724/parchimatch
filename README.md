@@ -92,7 +92,7 @@ To label order lines written by other people (one per line in a text file) for a
 npm run label -- --catalog data/synthetic/catalog.csv --in data/human/raw.txt --out data/human/labelled.jsonl
 ```
 
-For each line it shows the parsed quantity and unit and the five closest products, then asks for the product, quantity, unit, whether a careful person could enter it without asking, and tags. It saves after every line and continues where it stopped. It refuses to write into `data/synthetic/` or a locked file.
+For each line it shows the parsed quantity and unit and eight candidate products, sorted by name and without scores, then asks for the product (a number from the list or any SKU), quantity, unit, whether a careful person could enter it without asking (y or n, no default), and tags. It saves after every line and continues where it stopped. It refuses to write into `data/synthetic/` or a locked file.
 
 ## Documentation
 

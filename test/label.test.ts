@@ -53,10 +53,10 @@ test('labels piped answers into well-formed JSONL, re-asks invalid answers, and 
   const args = ['--catalog', catalogPath, '--in', raw, '--out', out];
 
   const first = label(args, [
-    '1', '', '', '', 'price_variant, hinglish_unit', // h001: top candidate, parsed qty/unit, careful person could enter it
-    '9', 'n', 'abc', '2', 'jodi', 'ctn', 'ambiguous_variant', // h003: invalid answers are asked again; n = needs review
+    '6', '', '', 'y', 'price_variant, hinglish_unit', // h001: Parle-G ₹5 is 6th (names sorted, numbers by value: ₹5 before ₹10); parsed qty/unit; y typed
+    '9', 'n', 'abc', '2', 'jodi', 'ctn', 'ambiguous_variant', // h003: invalid answers are asked again (only 8 listed); n = needs review
     'prlg-5', '-', '', 'devanagari', // h004: product typed as a SKU, quantity unclear
-    '1', // h005: stopped half-way (end of input), so nothing is saved for it
+    '4', // h005: stopped half-way (end of input), so nothing is saved for it
   ]);
   assert.equal(first.status, 0, first.stdout + first.stderr);
   assert.match(first.stdout, /PRLG-5/);
@@ -71,7 +71,7 @@ test('labels piped answers into well-formed JSONL, re-asks invalid answers, and 
   ]);
   assert.match(readFileSync(out, 'utf8'), /^\/\/ /, 'a new file starts with a provenance comment');
 
-  const second = label(args, ['1', '', '', 'n', '']);
+  const second = label(args, ['4', '', '', 'n', '']);
   assert.equal(second.status, 0, second.stdout + second.stderr);
   assert.doesNotMatch(second.stdout, /parle g 5\/- 2 petti/, 'labelled lines are skipped, not asked again');
   assert.match(second.stdout, /Done\. 4 of 4 lines labelled/);
@@ -79,6 +79,56 @@ test('labels piped answers into well-formed JSONL, re-asks invalid answers, and 
   for (const c of all) wellFormed(c);
   assert.deepEqual(all.slice(0, 3), cases);
   assert.deepEqual(all[3], { id: 'h005', text: 'maggi masala 3 pkt', gold: { sku: 'MAGGI-14', qty: 3, unit: 'packet', status: 'needs_review' }, tags: [] });
+});
+
+// The candidate block printed for one order line: [position, sku, label].
+function shown(stdout: string, id: string): [number, string, string][] {
+  const block = stdout.slice(stdout.indexOf(`] ${id} `)).split('\nProduct')[0];
+  return [...block.matchAll(/^ {2}(\d+)\) (\S+) {2}(.+)$/gm)].map((m) => [Number(m[1]), m[2], m[3]]);
+}
+
+test('shows 8 candidates in alphabetical label order without scores, and a number picks the one shown there', (t) => {
+  const dir = scratch(t);
+  const raw = join(dir, 'raw.txt');
+  const out = join(dir, 'human.jsonl');
+  writeFileSync(raw, 'maggi masala 3 pkt\n');
+  const r = label(['--catalog', catalogPath, '--in', raw, '--out', out], ['4', '', '', 'y', '']);
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  const list = shown(r.stdout, 'h001');
+  assert.deepEqual(list.map(([n]) => n), [1, 2, 3, 4, 5, 6, 7, 8]);
+  const labels = list.map(([, , text]) => text);
+  assert.deepEqual(labels, [...labels].sort((a, b) => a.localeCompare(b, 'en', { numeric: true })));
+  assert.doesNotMatch(r.stdout, /\(-?\d+\.\d+\)/, 'no fuzzy scores');
+  // Fuzzy ranks Maggi 70 g first; alphabetically it is 4th, and 4 saves exactly what was shown at 4.
+  assert.equal(list[3][1], 'MAGGI-14');
+  assert.equal(readJsonl<Case>(out)[0].gold.sku, list[3][1]);
+});
+
+test('the status question has no default: Enter and other answers ask again, and a bare Enter never labels ok', (t) => {
+  const dir = scratch(t);
+  const raw = join(dir, 'raw.txt');
+  const out = join(dir, 'human.jsonl');
+  writeFileSync(raw, 'parle g 5/- 2 petti\n');
+  const args = ['--catalog', catalogPath, '--in', raw, '--out', out];
+  const stray = label(args, ['6', '', '', '']);
+  assert.equal(stray.status, 0, stray.stdout + stray.stderr);
+  assert.match(stray.stdout, /\[y\/n\]: /);
+  assert.doesNotMatch(stray.stdout, /\[Y\/n\]/);
+  assert.equal(readJsonl<Case>(out).length, 0, 'Enter alone saved nothing');
+  const r = label(args, ['6', '', '', '', 'maybe', 'y', '']);
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.equal(r.stdout.split('Could a careful person enter this line without asking anything? [y/n]: ').length - 1, 3);
+  assert.deepEqual(readJsonl<Case>(out)[0].gold, { sku: 'PRLG-5', qty: 2, unit: 'carton', status: 'ok' });
+});
+
+test('numbers in labels sort by value, so price variants read ₹5, ₹10, ₹20, ₹50', (t) => {
+  const dir = scratch(t);
+  const raw = join(dir, 'raw.txt');
+  writeFileSync(raw, 'parle g 5/- 2 petti\n');
+  const r = label(['--catalog', catalogPath, '--in', raw, '--out', join(dir, 'human.jsonl')], []);
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  const parle = shown(r.stdout, 'h001').map(([, sku]) => sku).filter((sku) => sku.startsWith('PRLG-'));
+  assert.deepEqual(parle, [...parle].sort((a, b) => Number(a.slice(5)) - Number(b.slice(5))));
 });
 
 test('never writes into data/synthetic/, a locked file, or the input itself', (t) => {

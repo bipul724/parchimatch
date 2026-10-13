@@ -97,12 +97,23 @@ function byTag(rows: Scored[]) {
   );
 }
 
+// A bad number used to change the measurement silently: "--limit" scored 1 case, "--min-score" became 1.
+function invalidNumber(args: Record<string, string | boolean>): string | null {
+  const whole = (flag: string, min: number, example: string) =>
+    args[flag] !== undefined && !(/^\d+$/.test(String(args[flag])) && Number(args[flag]) >= min) ? `--${flag} must be a whole number from ${min} up, e.g. --${flag} ${example}` : null;
+  const fraction = (flag: string, example: string) =>
+    args[flag] !== undefined && !(/^(\d+(\.\d*)?|\.\d+)$/.test(String(args[flag])) && Number(args[flag]) <= 1) ? `--${flag} must be a number from 0 to 1, e.g. --${flag} ${example}` : null;
+  return whole('limit', 1, '20') ?? whole('k', 1, '8') ?? whole('ctx', 1, '2048') ?? whole('show', 0, '12')
+    ?? fraction('min-score', '0.5') ?? fraction('min-margin', '0.08');
+}
+
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   const usageError = missingValue(args, {
     catalog: 'data/real/catalog.csv', cases: 'data/synthetic/dev.jsonl', model: 'gemma4:e2b-it-qat',
-    url: 'http://127.0.0.1:11434', out: 'results', label: 'my-change',
-  });
+    url: 'http://127.0.0.1:11434', out: 'results', label: 'my-change', methods: 'exact,fuzzy',
+    limit: '20', k: '8', 'min-score': '0.5', 'min-margin': '0.08', ctx: '2048', show: '12',
+  }) ?? invalidNumber(args);
   if (usageError) {
     console.error(usageError);
     process.exit(1);

@@ -105,7 +105,8 @@ async function main() {
 
   for (const [i, l] of todo.entries()) {
     const parsed = parse(l.text, { namePhrases });
-    const top = retrieve(parsed, catalog, 5);
+    // The same 8 candidates the model is shown, by name (numbers by value: ₹5 before ₹10) and without scores, so fuzzy's ranking doesn't steer the label.
+    const top = retrieve(parsed, catalog, 8).map((r) => r.item).sort((a, b) => itemLabel(a).localeCompare(itemLabel(b), 'en', { numeric: true }) || a.sku.localeCompare(b.sku));
     const hints = [
       `qty ${parsed.qty ?? '–'}`, `unit ${parsed.unit ?? '–'}`,
       ...(parsed.priceHint !== null ? [`price ₹${parsed.priceHint}`] : []),
@@ -114,7 +115,7 @@ async function main() {
       ...(parsed.unclearNumber ? [`unclear number "${parsed.unclearNumber}"`] : []),
     ];
     console.log(`\n[${i + 1}/${todo.length}] ${l.id}  ${l.text}\n  parsed: ${hints.join(' · ')}`);
-    top.forEach((r, k) => console.log(`  ${k + 1}) ${r.item.sku}  ${itemLabel(r.item)}  (${r.score.toFixed(2)})`));
+    top.forEach((item, k) => console.log(`  ${k + 1}) ${item.sku}  ${itemLabel(item)}`));
 
     let sku: string | null | undefined;
     while (sku === undefined) {
@@ -122,7 +123,7 @@ async function main() {
       if (a === null) break;
       const typed = catalog.find((c) => c.sku.toLowerCase() === a.toLowerCase());
       if (a.toLowerCase() === 'n') sku = null;
-      else if (/^\d+$/.test(a) && Number(a) >= 1 && Number(a) <= top.length) sku = top[Number(a) - 1].item.sku;
+      else if (/^\d+$/.test(a) && Number(a) >= 1 && Number(a) <= top.length) sku = top[Number(a) - 1].sku;
       else if (typed) sku = typed.sku;
       else console.log(`  "${a}" is not a number from the list or a SKU in the catalogue.`);
     }
@@ -154,13 +155,14 @@ async function main() {
     if (unit === undefined) break;
 
     // A careful person can't enter a row without product, quantity and unit; otherwise it's the labeller's call
-    // (e.g. a carton of an item whose carton size nobody knows still needs a question).
+    // (e.g. a carton of an item whose carton size nobody knows still needs a question). No default: a stray Enter
+    // labelling a line ok would make a system's missed question look safe.
     let status: Case['gold']['status'] | undefined = sku && qty && unit ? undefined : 'needs_review';
     if (status) console.log('  → needs_review (product, quantity or unit missing)');
     while (status === undefined) {
-      const a = await input.ask('Could a careful person enter this line without asking anything? [Y/n]: ');
+      const a = await input.ask('Could a careful person enter this line without asking anything? [y/n]: ');
       if (a === null) break;
-      if (a === '' || /^y(es)?$/i.test(a)) status = 'ok';
+      if (/^y(es)?$/i.test(a)) status = 'ok';
       else if (/^no?$/i.test(a)) status = 'needs_review';
       else console.log('  Answer y or n.');
     }
