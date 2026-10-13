@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ParchiMatch Lite</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <span class="logo" aria-hidden="true">₹</span>
+      <div>
+        <h1>ParchiMatch <span>Lite</span></h1>
+        <p>Messy orders → your catalogue. Runs on this computer.</p>
+      </div>
+    </div>
+    <div class="chips" id="chips" aria-live="polite"></div>
+  </header>
+
+  <main>
+    <section class="panel input">
+      <div class="panel-head">
+        <h2>1 · Order</h2>
+        <label class="sample">Sample
+          <select id="sample"><option value="">Load a sample order…</option></select>
+        </label>
+      </div>
+      <textarea id="order" spellcheck="false" placeholder="Paste the order here, one item per line or comma-separated.&#10;&#10;parle g 5/- 2 petti&#10;tata namak 1 kg 5 ctn, lays hara 10 rs 3 box"></textarea>
+      <div class="actions">
+        <button id="match" class="primary" type="button">Match order</button>
+        <span id="progress" class="muted"></span>
+      </div>
+      <details class="catalogue">
+        <summary>Catalogue <span id="catcount" class="muted"></span></summary>
+        <p class="muted">CSV columns: <code>sku,name,brand,variant,mrp,sell_units,units_per_carton,aliases</code>. Units: piece, packet, carton, dozen, bag (use <code>|</code> between several).</p>
+        <label class="file">Replace catalogue <input id="catfile" type="file" accept=".csv,text/csv"></label>
+        <p id="catmsg" class="msg" role="status"></p>
+      </details>
+    </section>
+
+    <section class="panel review" aria-labelledby="review-h">
+      <div class="panel-head">
+        <h2 id="review-h">2 · Review</h2>
+        <div id="summary" class="summary"></div>
+      </div>
+      <div id="empty" class="empty">
+        <p>Matched lines appear here.</p>
+        <ul>
+          <li><b class="dot ok"></b>Green: matched and checked. Nothing to do.</li>
+          <li><b class="dot review"></b>Amber: the app asks one question and pre-fills its best guess.</li>
+          <li><b class="dot note"></b>Grey: greetings and notes, ignored.</li>
+        </ul>
+      </div>
+      <div id="rows" class="rows"></div>
+      <div class="actions export">
+        <button id="export" class="primary" type="button" disabled>3 · Export CSV</button>
+        <span id="exportmsg" class="muted"></span>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="/app.js"></script>
+</body>
+</html>
