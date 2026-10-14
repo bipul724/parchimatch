@@ -15,7 +15,7 @@ The working task list for ParchiMatch Lite. Read [context.md](context.md) first.
 
 ## Code tasks (coding agent)
 
-**Order of work for the coding agent (decided 13 Oct):** A7 → A8 → A3 → A5 → A4 → A9 (all done 13 Oct). A6 not doing (C6). A10 and A11 done. **No agent tasks are open; the code is frozen for the entry.** A7 and A8 are small correctness fixes; A3 and A5 matter most for the demo; A4 feeds the human-written test set.
+**Order of work for the coding agent (decided 13 Oct):** A7 → A8 → A3 → A5 → A4 → A9 (all done 13 Oct). A6 not doing (C6). A10 and A11 done. **A12 (Sentry tracing in the evaluation harness only) is the one exception to the code freeze**, approved by the owner on 14 Oct for the prize category. A7 and A8 are small correctness fixes; A3 and A5 matter most for the demo; A4 feeds the human-written test set.
 
 ### A1. Numbers with commas: never split, read correctly, never guess: `done` (critical, revised 13 Oct)
 **Review (Claude, 13 Oct):** accepted. 170/170 tests; acceptance lines verified through the pipeline (`1,500 bag` → green 1500 bag; `1,5` → amber S16; `1,00,000` → amber S11; comma-separated items still split). Old-vs-new on all 440 practice/fixture/test lines × exact+fuzzy: **0 outcomes changed**. Locked test hash unchanged.
@@ -140,6 +140,49 @@ The working task list for ParchiMatch Lite. Read [context.md](context.md) first.
 **Owner decisions already made:**
 - Disk is 6 GB. Claude fixed README and DEPLOY.
 - README Quick start has a `git clone` step. Claude added it.
+
+### A12. Sentry Agent Tracing for the evaluation harness (opt-in): `done`
+**Review (Claude, 14 Oct):** accepted. The app is untouched and `package.json` still has no dependencies. Old vs new code with the real model on all 320 practice lines, hybrid: **0 rows changed** (outcome, product, qty, unit, status, question, reasons), and token counts were recorded on all 113 model calls. **Claude's additions:** tracing is refused for a locked test set (test-first); `npm run eval:trace` loads `.env` for that one command; a D8 exception note in DESIGN.md. 205/205 tests; locked hash unchanged. **Left to do:** one real traced run on `dev.jsonl` with the owner's Sentry key (needs `npm install --no-save @sentry/node`), which checks the real adapter and the fetch spans (open questions 1 and 3).
+**Why:** this is for the "Best Use of Sentry Agent Tracing" prize category. That category had about 1 competing post on 14 Oct, against about 51 for Gemma. The category asks to show the agent's work: setup, latency, tokens, what we found, how we debugged. **The shop app must keep sending nothing anywhere.** Tracing exists only in `npm run eval`, only when switched on, and only on synthetic or fixture data.
+
+**Do (test-first):**
+1. **`src/llm.ts`:** return token counts in the trace, `promptTokens` and `outputTokens`, from Ollama's `prompt_eval_count` and `eval_count` (null if absent). Use the sum over retries. Nothing else in `decide()` changes.
+2. **New `src/trace.ts`:** a tiny tracer interface, `startSpan(options, fn)` plus `flush()`, with two implementations:
+   - a **no-op** tracer, the default;
+   - a **Sentry** tracer that loads `@sentry/node` with a dynamic `import()` **only** when `SENTRY_DSN` is set.
+
+   **`@sentry/node` is NOT added to package.json.** If it isn't installed, eval stops with one line: `Tracing needs @sentry/node: npm install --no-save @sentry/node`, exit 1. Initialise with `tracesSampleRate: 1.0`, `environment: "eval"`, and `release: <git short sha if available>`.
+3. **`src/eval.ts`:** when tracing is on, build this span tree, following Sentry's manual agent-tracing conventions:
+   - One root span per method run, `eval <method> <label>`, with attributes for the method, model, cases file and its sha, k and min-score.
+   - Per order line, `invoke_agent parchimatch-<method>`:
+     - op `gen_ai.invoke_agent`;
+     - `gen_ai.operation.name` = `invoke_agent`;
+     - `gen_ai.agent.name` = `parchimatch-<method>`;
+     - input message = the order line text;
+     - output message = the final row as JSON (sku, qty, unit, status, question);
+     - custom attributes `parchimatch.case_id`, `parchimatch.outcome` (auto_correct / auto_wrong / flagged_* / missed_flag), `parchimatch.status`, `parchimatch.reasons` (JSON string).
+   - Children of that span:
+     - **`execute_tool fuzzy_match`:** op `gen_ai.execute_tool`, `gen_ai.tool.name` = `fuzzy_match`, with the top score and the lead.
+     - **`chat <model>`, only when the model is called:** op `gen_ai.chat`, `gen_ai.operation.name` = `chat`, `gen_ai.provider.name` = `ollama`, `gen_ai.request.model` and `gen_ai.response.model` = the model, `gen_ai.request.temperature` = 0, `gen_ai.usage.input_tokens` and `gen_ai.usage.output_tokens` from step 1, `gen_ai.system_instructions` = the system prompt, the input and output messages, and span status ERROR plus `error.type` on a model error.
+     - **`execute_tool safety_rules`:** the `finalize()` step, with which rules fired (reasons).
+   - Spans must not change any result: same rows, same summary numbers, tracing on or off.
+4. **Privacy guard:** tracing is refused, with one line and exit 1, when `--cases` or `--catalog` resolve outside `data/synthetic/` or `data/fixture/`. Real or human-written orders never go to Sentry.
+5. **Never in `src/server.ts` or `src/start.ts`.** Add a test that greps them for `sentry` or `trace.ts` and fails if found.
+6. **Docs:**
+   - `docs/EVALUATION.md` gets a new "Tracing an evaluation with Sentry (optional)" section: what's sent (synthetic order lines, model prompts and replies, token counts, timings), what's never sent (anything from the app; real or human data), the `.env`/`SENTRY_DSN` setup (`.env*` is gitignored), and the install-on-demand command.
+   - The README "zero dependencies" claim says the app has none and that optional tracing installs one package on demand.
+   - `docs/ARCHITECTURE.md` gets a line on it.
+
+**Done when:**
+- Tests use a **fake tracer**. They don't need `@sentry/node` and send nothing. They cover:
+  - the span tree and its attributes for one hybrid line that calls the model (Ollama stub) and one that doesn't;
+  - no spans and no import when `SENTRY_DSN` is unset;
+  - refusal for a `--cases` outside synthetic/fixture;
+  - the "not installed" message;
+  - identical eval results with tracing on and off;
+  - the server/start grep.
+- `npm test` passes, and the locked hash is unchanged.
+- **The agent must not run any model evaluation and must not touch `data/synthetic/test.jsonl`.** Claude does the real traced run on the practice set with the owner's Sentry key.
 
 ### A6. Misspelled product names that contain a number: `not doing` (decided 13 Oct, C6)
 **Decision (Claude):** no fix for this entry. The only catalogue name with a number is 5 Star (plus the "maggi 4 pack" alias). All six practice lines with it (d003, d123, d142, d172, d179, d214) spell it correctly ("5 star", "five star"), so the practice set has no evidence to build or check a fix against. The only example (`5 sttar 20 wala 5box`) is in the locked test set, which we never tune on. The line is safe: it's asked about, not wrongly accepted. It stays a known limitation.

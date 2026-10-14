@@ -12,7 +12,7 @@ Everything an agent or collaborator needs to work on ParchiMatch Lite without re
 | Challenge | DEV Hacktoberfest 2026 Open-Source AI Challenge, **Week 2 "Side Hustle"** (challenge id 80). Tag `#hf26challenge` + `#devchallenge`. Writing quality is weighted most. The owner is registered for Week 2. |
 | Repo | `https://github.com/bipul724/parchimatch`, branch `main`. HEAD = `5b11d4e docs: detailed handoff in context.md` (pushed). |
 | Uncommitted work | Coding agent's **A7, A8, A3, A5, A4**: all **reviewed and accepted by Claude on 13 Oct** and waiting for the owner to commit. New files: `src/start.ts` (`npm run app`), `src/label.ts` (`npm run label`), `test/cli-flags.test.ts`, `test/start.test.ts`, `test/label.test.ts`. |
-| Tests | `npm test` → **195 pass, 0 fail** (Node 24.3.0) after A11. |
+| Tests | `npm test` → **205 pass, 0 fail** (Node 24.3.0) after A12. |
 | Locked test set | `data/synthetic/test.jsonl` unchanged (sha256 `a0c35e04…`, lock file `test.jsonl.lock.json`). |
 | Default model | `gemma4:e2b-it-qat` (since the 13 Oct bake-off). Pulled locally: gemma4:e2b-it-qat, gemma4:e4b-it-qat, gemma3:4b, qwen3.5:2b-q4_K_M, qwen3.5:4b-q4_K_M. |
 | Site | `site/` (static, 7 pages) + `.github/workflows/pages.yml`. GitHub Pages is **not enabled yet** (owner task U4). Canonical URLs point to `https://bipul724.github.io/parchimatch/`. |
@@ -121,6 +121,7 @@ order text → splitOrder → parse (code reads every number) → fuzzy match
 | 13 Oct | A2: explicit `--catalog` > saved upload > default | Uploaded catalogue was lost on restart (HTTP-08). |
 | 13 Oct | Invalid explicit `--catalog` keeps stopping the server; empty catalogue rejected everywhere (A7); valueless flags give a clear error (A8) | Explicit = fail loudly; a 0-item catalogue is invalid. |
 | 13 Oct | **Not doing:** bigger models, public hosting of the app, Tinker fine-tuning (for this deadline), voice/OCR/WhatsApp, direct Tally writes | RAM limit, privacy/no auth, time vs. evidence. |
+| 14 Oct | **Extra prize categories** | Scanned all 211 Week 2 posts (14 Oct). Rough counts of posts claiming each category: Gemma ~51, Render ~14, TabPFN ~10, .tech ~7, Copilot ~5 (all via the Actions route), ElevenLabs ~5, Tinker ~4, Sentry ~1, Entire 0. Owner chose, free credits only: **.tech Domain** (owner claims; Claude switches the site), **Entire** (owner installs the CLI with Claude Code; it captures only sessions from install onward, and the post must say so), **Sentry Agent Tracing** (A12: eval harness only, opt-in, synthetic data only). Skipped: Copilot (Claude writes the code), ElevenLabs (narration-only is thin), Tinker (stretch), and everything that breaks local-only. No category is a guaranteed win. |
 | 13 Oct | Prize strategy | The overall prize is the main target. Now eligible for **Best Use of Gemma** (Gemma 4 E2B is the shipped decider). Other partner categories aren't used. |
 
 ## 7. Results (all synthetic)
