@@ -171,3 +171,18 @@ test('stops when an already-labelled id no longer matches the input line, and ne
   assert.notEqual(missing.status, 0);
   assert.match(missing.stderr, /--out/);
 });
+
+test('a missing or unreadable --in file stops with one plain line and writes nothing', (t) => {
+  const dir = scratch(t);
+  const out = join(dir, 'human.jsonl');
+  const missing = join(dir, 'raw.txt');
+  let r = label(['--catalog', catalogPath, '--in', missing, '--out', out], []);
+  assert.equal(r.status, 1, r.stdout + r.stderr);
+  assert.equal(r.stderr.trim(), `Can't read ${missing}: no such file. Save the order lines there first, one per line.`);
+  assert.doesNotMatch(r.stdout + r.stderr, /\n\s+at |Error:|ENOENT/);
+  assert.equal(existsSync(out), false);
+  r = label(['--catalog', catalogPath, '--in', dir, '--out', out], []);
+  assert.equal(r.status, 1, r.stdout + r.stderr);
+  assert.equal(r.stderr.trim(), `Can't read ${dir}: it's a folder, not a file.`);
+  assert.equal(existsSync(out), false);
+});

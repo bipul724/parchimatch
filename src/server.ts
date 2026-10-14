@@ -13,7 +13,7 @@ import { checkConfirmed, exportCsv, itemLabel, matchLine, nameIsKnown } from './
 import type { ConfirmedRow } from './review.ts';
 import type { CatalogItem } from './types.ts';
 import { normalize, parse } from './text.ts';
-import { ensureDir, missingValue, parseArgs } from './util.ts';
+import { ensureDir, fileProblem, missingValue, parseArgs } from './util.ts';
 
 // Local review app. Binds to 127.0.0.1 only; nothing leaves the machine except calls to the local Ollama.
 // Usage: npm start [-- --catalog data/synthetic/catalog.csv] [--port 5178] [--data data/app] [--model gemma4:e2b-it-qat]
@@ -40,7 +40,13 @@ const ollamaUrl = String(args.url ?? 'http://127.0.0.1:11434');
 function startupCatalog(): { path: string; items: CatalogItem[]; why: string } {
   if (args.catalog !== undefined) {
     const path = resolve(root, String(args.catalog));
-    return { path, items: loadCatalog(path), why: '--catalog' };
+    // An explicit catalogue never falls back to another one; it stops with a plain message instead of a stack trace.
+    try {
+      return { path, items: loadCatalog(path), why: '--catalog' };
+    } catch (e) {
+      console.error((e as { code?: string }).code ? `Can't read catalogue ${String(args.catalog)}: ${fileProblem(e)}.` : (e as Error).message);
+      process.exit(1);
+    }
   }
   const uploaded = join(dataDir, 'catalog.csv');
   let why = 'default: no --catalog and nothing uploaded';

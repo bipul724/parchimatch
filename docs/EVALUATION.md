@@ -165,3 +165,5 @@ It shows the parsed quantity/unit and eight candidate products, sorted by name (
 | `node tools/gen-synthetic.ts --out data/synthetic --dev-only` | Regenerate synthetic dev data (the locked test set is kept) |
 
 Useful eval flags: `--model`, `--k` (candidates, default 8), `--min-score` (0.5), `--min-margin` (0.08), `--ctx` (2048), `--think`, `--limit`, `--show`.
+
+Result files are never overwritten. They're named by the second (`<timestamp>_<method>.json`); if that name is already taken, for example by another run in the same second, the new file gets `-2`, `-3`, … before `.json`. `summary.md` gets one appended row per run.

@@ -107,6 +107,20 @@ function invalidNumber(args: Record<string, string | boolean>): string | null {
     ?? fraction('min-score', '0.5') ?? fraction('min-margin', '0.08');
 }
 
+// Result files are named by the second. Never overwrite one another run wrote in that second: add -2, -3, …
+// The exclusive create ('wx') also holds when two runs race for the same name.
+function writeNew(base: string, text: string): string {
+  for (let n = 1; ; n++) {
+    const file = n === 1 ? `${base}.json` : `${base}-${n}.json`;
+    try {
+      writeFileSync(file, text, { flag: 'wx' });
+      return file;
+    } catch (e) {
+      if ((e as { code?: string }).code !== 'EEXIST') throw e;
+    }
+  }
+}
+
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   const usageError = missingValue(args, {
@@ -147,7 +161,7 @@ async function main() {
   console.log(`Catalogue ${basename(catalogPath)}: ${catalog.length} items · cases ${basename(casesPath)}: ${cases.length} (sha ${casesHash})`);
   // macOS counts cached memory as used, so "free" RAM looks near zero; watch Memory Pressure in Activity Monitor instead.
   console.log(`RAM ${(totalmem() / 1e9).toFixed(1)} GB total · disk free ${freeDiskGb.toFixed(1)} GB`);
-  if (freeDiskGb < 8) console.warn('! Under 8 GB of free disk: a 4B model (3.3 GB) plus Ollama and swap may not fit.');
+  if (freeDiskGb < 8) console.warn('! Under 8 GB of free disk: the default model (4.3 GB download) plus Ollama and swap may not fit.');
 
   const ctx = makeCtx(catalog, {
     k: args.k ? Number(args.k) : undefined,
@@ -209,9 +223,8 @@ async function main() {
     }
     if (bad.length > Number(args.show ?? 12)) console.log(`  … ${bad.length - Number(args.show ?? 12)} more in the results file`);
 
-    const file = `${outDir}/${stamp}_${method}${usesModel ? `_${model.replace(/[^a-z0-9.]+/gi, '-')}` : ''}.json`;
-    writeFileSync(
-      file,
+    const file = writeNew(
+      `${outDir}/${stamp}_${method}${usesModel ? `_${model.replace(/[^a-z0-9.]+/gi, '-')}` : ''}`,
       JSON.stringify(
         {
           method,

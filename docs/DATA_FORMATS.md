@@ -86,7 +86,7 @@ line_no,order_text,sku,name,variant,qty,unit,base_qty,base_unit,status,reviewer_
 
 ## Evaluation results
 
-`results/<timestamp>_<method>[_<model>].json` holds settings, machine info, summary metrics, per-tag breakdown and every row with its reasons. `results/summary.md` holds one table row per run. Metrics are defined in [EVALUATION.md](EVALUATION.md#metrics).
+`results/<timestamp>_<method>[_<model>].json` (with `-2`, `-3`, … added if a run in the same second already used the name; nothing is overwritten) holds settings, machine info, summary metrics, per-tag breakdown and every row with its reasons. `results/summary.md` holds one table row per run. Metrics are defined in [EVALUATION.md](EVALUATION.md#metrics).
 
 ## Training conversations (optional fine-tuning)
 

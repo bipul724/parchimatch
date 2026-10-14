@@ -89,7 +89,7 @@ npm run eval -- --catalog data/synthetic/catalog.csv --cases data/synthetic/test
 
 Results go to `results/` (every row with reasons, a per-tag breakdown, and a running `summary.md`). To evaluate on a real shop's data, lock a test set first: [EVALUATION.md](docs/EVALUATION.md).
 
-To label order lines written by other people (one per line in a text file) for a human-written test set:
+To label order lines written by other people for a human-written test set, first save the lines in `data/human/raw.txt`, one order line per line, then run:
 
 ```bash
 npm run label -- --catalog data/synthetic/catalog.csv --in data/human/raw.txt --out data/human/labelled.jsonl

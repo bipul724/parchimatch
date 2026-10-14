@@ -84,6 +84,15 @@ export function missingValue(args: Record<string, string | boolean>, examples: R
   return null;
 }
 
+// Plain words for a file error ("no such file"), instead of "ENOENT: no such file or directory, open '…'".
+export function fileProblem(e: unknown): string {
+  const code = (e as { code?: string }).code;
+  if (code === 'ENOENT') return 'no such file';
+  if (code === 'EISDIR') return "it's a folder, not a file";
+  if (code === 'EACCES' || code === 'EPERM') return 'permission denied';
+  return e instanceof Error ? e.message : String(e);
+}
+
 export function parseArgs(argv: string[]): Record<string, string | boolean> {
   const out: Record<string, string | boolean> = {};
   for (let i = 0; i < argv.length; i++) {

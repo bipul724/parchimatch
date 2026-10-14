@@ -7,7 +7,7 @@ import { itemLabel } from './review.ts';
 import { parse, UNIT_WORDS } from './text.ts';
 import { UNITS } from './types.ts';
 import type { Case, Unit } from './types.ts';
-import { ensureDir, missingValue, parseArgs, readJsonl } from './util.ts';
+import { ensureDir, fileProblem, missingValue, parseArgs, readJsonl } from './util.ts';
 
 // Labels order lines written by other people, for a human-written test set (docs/EVALUATION.md).
 // Usage: npm run label -- --catalog <csv> --in <raw.txt> --out <labelled.jsonl>
@@ -87,7 +87,14 @@ async function main() {
   const catalog = loadCatalog(catalogPath);
   const index = bySku(catalog);
   const namePhrases = numberNamePhrases(catalog);
-  const lines = readFileSync(inPath, 'utf8').split(/\r?\n/).map((text, i) => ({ id: `h${String(i + 1).padStart(3, '0')}`, n: i + 1, text: text.trim() })).filter((l) => l.text);
+  let raw = '';
+  try {
+    raw = readFileSync(inPath, 'utf8');
+  } catch (e) {
+    const missing = (e as { code?: string }).code === 'ENOENT';
+    fail(`Can't read ${String(args.in)}: ${fileProblem(e)}.${missing ? ' Save the order lines there first, one per line.' : ''}`);
+  }
+  const lines = raw.split(/\r?\n/).map((text, i) => ({ id: `h${String(i + 1).padStart(3, '0')}`, n: i + 1, text: text.trim() })).filter((l) => l.text);
 
   const done = new Map((existsSync(outPath) ? readJsonl<Case>(outPath) : []).map((c) => [c.id, c.text]));
   for (const l of lines) {
