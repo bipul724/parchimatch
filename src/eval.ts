@@ -1,10 +1,13 @@
 import { appendFileSync, existsSync, readFileSync, statfsSync, writeFileSync } from 'node:fs';
 import { freemem, totalmem } from 'node:os';
-import { basename } from 'node:path';
+import { execFileSync } from 'node:child_process';
+import { basename, resolve } from 'node:path';
 import { loadCatalog } from './catalog.ts';
 import { availableModels, loadedModels } from './llm.ts';
 import { makeCtx, METHODS, run } from './methods.ts';
-import type { Method } from './methods.ts';
+import type { Ctx, Method } from './methods.ts';
+import { allowedForTracing, makeTracer, noopTracer, TracingUnavailable } from './trace.ts';
+import type { Tracer } from './trace.ts';
 import type { Case, MethodResult } from './types.ts';
 import { ensureDir, missingValue, parseArgs, percentile, readJsonl, sha256 } from './util.ts';
 
@@ -42,7 +45,7 @@ function scoreCase(c: Case, r: MethodResult): Scored {
 const pct = (n: number, d: number) => (d === 0 ? null : Math.round((1000 * n) / d) / 10);
 const fmt = (v: number | null, suffix = '%') => (v === null ? '–' : `${v}${suffix}`);
 
-function summarise(rows: Scored[]) {
+export function summarise(rows: Scored[]) {
   const count = (o: Outcome) => rows.filter((r) => r.outcome === o).length;
   const goldOk = rows.filter((r) => r.gold.status === 'ok').length;
   const goldReview = rows.length - goldOk;
@@ -121,6 +124,81 @@ function writeNew(base: string, text: string): string {
   }
 }
 
+const root = resolve(import.meta.dirname, '..');
+
+// One method over all cases. With tracing on, each run is a root span and each order line an invoke_agent span
+// (Sentry's agent-tracing conventions); run() adds the fuzzy_match, chat and safety_rules children. The spans only
+// observe: rows and numbers are the same with tracing on or off.
+export async function evaluateMethod(
+  method: Method,
+  cases: Case[],
+  ctx: Ctx,
+  tracer: Tracer,
+  meta: { label: string; model: string; casesFile: string; casesSha: string },
+  onCase: () => void = () => {},
+): Promise<Scored[]> {
+  const usesModel = method.startsWith('llm') || method === 'hybrid';
+  const agent = `parchimatch-${method}`;
+  return tracer.startSpan(
+    {
+      name: `eval ${method} ${meta.label}`.trim(),
+      op: 'eval.run',
+      attributes: {
+        'parchimatch.method': method,
+        'gen_ai.request.model': usesModel ? meta.model : undefined,
+        'parchimatch.cases': meta.casesFile,
+        'parchimatch.cases_sha': meta.casesSha,
+        'parchimatch.k': ctx.k,
+        'parchimatch.min_score': ctx.minScore,
+        'parchimatch.label': meta.label || undefined,
+      },
+    },
+    async () => {
+      const rows: Scored[] = [];
+      for (const c of cases) {
+        rows.push(
+          await tracer.startSpan(
+            {
+              name: `invoke_agent ${agent}`,
+              op: 'gen_ai.invoke_agent',
+              attributes: {
+                'gen_ai.operation.name': 'invoke_agent',
+                'gen_ai.agent.name': agent,
+                'gen_ai.input.messages': JSON.stringify([{ role: 'user', parts: [{ type: 'text', content: c.text }] }]),
+                'parchimatch.case_id': c.id,
+              },
+            },
+            async (span) => {
+              const scored = scoreCase(c, await run(method, c.text, ctx, tracer));
+              const p = scored.result.prediction;
+              const llm = scored.result.llm;
+              span.setAttributes({
+                'gen_ai.output.messages': JSON.stringify([{ role: 'assistant', parts: [{ type: 'text', content: JSON.stringify({ sku: p.sku, qty: p.qty, unit: p.unit, status: p.status, question: p.question ?? '' }) }] }]),
+                'parchimatch.outcome': scored.outcome,
+                'parchimatch.status': p.status,
+                'parchimatch.reasons': JSON.stringify(p.reasons),
+                ...(llm?.promptTokens != null ? { 'gen_ai.usage.input_tokens': llm.promptTokens } : {}),
+                ...(llm?.outputTokens != null ? { 'gen_ai.usage.output_tokens': llm.outputTokens } : {}),
+              });
+              return scored;
+            },
+          ),
+        );
+        onCase();
+      }
+      return rows;
+    },
+  );
+}
+
+function gitShortSha(): string | undefined {
+  try {
+    return execFileSync('git', ['rev-parse', '--short', 'HEAD'], { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim() || undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   const usageError = missingValue(args, {
@@ -141,6 +219,31 @@ async function main() {
   const limit = args.limit ? Number(args.limit) : Infinity;
   const label = args.label ? String(args.label) : '';
   for (const m of methods) if (!METHODS.includes(m)) throw new Error(`Unknown method "${m}". Use: ${METHODS.join(', ')}`);
+
+  // Tracing is opt-in (SENTRY_DSN) and only for synthetic or fixture data: real or human-written orders never leave.
+  let tracer: Tracer = noopTracer;
+  const release = process.env.SENTRY_DSN ? gitShortSha() : undefined;
+  if (process.env.SENTRY_DSN) {
+    const outside = ([['--cases', casesPath], ['--catalog', catalogPath]] as const).find(([, path]) => !allowedForTracing(path, root));
+    if (outside) {
+      console.error(`Tracing only runs on synthetic or fixture data (data/synthetic/, data/fixture/); ${outside[0]} ${outside[1]} is outside. Unset SENTRY_DSN to evaluate it without tracing.`);
+      process.exit(1);
+    }
+    // A traced run of a locked test set would be one more locked-test run; trace practice data instead.
+    if (existsSync(`${casesPath}.lock.json`)) {
+      console.error(`Tracing is off for a locked test set (${String(args.cases)}.lock.json). Trace the practice set instead, e.g. --cases data/synthetic/dev.jsonl.`);
+      process.exit(1);
+    }
+    try {
+      tracer = await makeTracer(process.env, { release });
+    } catch (e) {
+      if (e instanceof TracingUnavailable) {
+        console.error(e.message);
+        process.exit(1);
+      }
+      throw e;
+    }
+  }
 
   const catalog = loadCatalog(catalogPath);
   const casesText = readFileSync(casesPath, 'utf8');
@@ -196,63 +299,67 @@ async function main() {
   const existing = existsSync(summaryPath) ? readFileSync(summaryPath, 'utf8') : '';
   if (!existing.includes(header)) appendFileSync(summaryPath, `${existing ? '\n' : ''}${header}`);
 
-  for (const method of runnable) {
-    const rows: Scored[] = [];
-    for (const c of cases) {
-      const r = await run(method, c.text, ctx);
-      rows.push(scoreCase(c, r));
-      if (method.startsWith('llm') || method === 'hybrid') process.stdout.write('.');
-    }
-    if (method.startsWith('llm') || method === 'hybrid') process.stdout.write('\n');
-    const s = summarise(rows);
-    const usesModel = method.startsWith('llm') || method === 'hybrid';
-    const loaded = usesModel ? await loadedModels(url) : [];
+  if (tracer !== noopTracer) console.log(`Tracing to Sentry: on (environment "eval"${release ? `, release ${release}` : ''}).`);
+  try {
+    for (const method of runnable) {
+      const rows = await evaluateMethod(method, cases, ctx, tracer, { label, model, casesFile: basename(casesPath), casesSha: casesHash }, () => {
+        if (method.startsWith('llm') || method === 'hybrid') process.stdout.write('.');
+      });
+      if (method.startsWith('llm') || method === 'hybrid') process.stdout.write('\n');
+      const s = summarise(rows);
+      const usesModel = method.startsWith('llm') || method === 'hybrid';
+      const loaded = usesModel ? await loadedModels(url) : [];
 
-    console.log(`\n== ${method}${usesModel ? ` · ${model}` : ''} ==`);
-    console.log(`auto-accept accuracy ${fmt(s.autoAcceptAccuracy)} (${s.autoCorrect}/${s.goldOk})   dangerous ${fmt(s.dangerousRate)} (${s.autoWrong} wrong + ${s.missedFlag} missed flags)`);
-    console.log(`flag recall ${fmt(s.flagRecall)} (${s.flaggedCorrectly}/${s.goldReview})   review load ${fmt(s.reviewLoad)}   SKU acc ${fmt(s.skuAccuracy)}   recall@${ctx.k} ${fmt(s.recallAtK)}`);
-    console.log(`zero typing ${fmt(s.zeroTyping)} (${s.autoCorrect} auto + ${s.oneTap} one-tap of ${s.goldOk})   suggestion acc ${fmt(s.suggestionAccuracy)}   model calls ${s.modelCalls}`);
-    if (usesModel) {
-      console.log(`valid JSON first try ${fmt(s.validJsonFirstTry)}   model errors ${s.modelErrors}   latency p50 ${fmt(s.p50ms === null ? null : Math.round(s.p50ms), ' ms')} p95 ${fmt(s.p95ms === null ? null : Math.round(s.p95ms), ' ms')}`);
-      for (const m of loaded) console.log(`loaded: ${m.name} ${(m.size / 1e9).toFixed(2)} GB (${(m.size_vram / 1e9).toFixed(2)} GB on GPU)`);
-    }
-    const bad = rows.filter((r) => r.outcome !== 'auto_correct' && r.outcome !== 'flagged_correctly');
-    for (const r of bad.slice(0, Number(args.show ?? 12))) {
-      const p = r.result.prediction;
-      console.log(`  ${r.outcome.padEnd(18)} ${r.id} "${r.text}" → ${p.sku ?? '∅'} ${p.qty ?? '∅'} ${p.unit ?? '∅'} [${p.reasons.join('; ')}] ask: ${p.question || '–'}  gold ${r.gold.sku ?? '∅'} ${r.gold.qty ?? '∅'} ${r.gold.unit ?? '∅'} ${r.gold.status}`);
-    }
-    if (bad.length > Number(args.show ?? 12)) console.log(`  … ${bad.length - Number(args.show ?? 12)} more in the results file`);
+      console.log(`\n== ${method}${usesModel ? ` · ${model}` : ''} ==`);
+      console.log(`auto-accept accuracy ${fmt(s.autoAcceptAccuracy)} (${s.autoCorrect}/${s.goldOk})   dangerous ${fmt(s.dangerousRate)} (${s.autoWrong} wrong + ${s.missedFlag} missed flags)`);
+      console.log(`flag recall ${fmt(s.flagRecall)} (${s.flaggedCorrectly}/${s.goldReview})   review load ${fmt(s.reviewLoad)}   SKU acc ${fmt(s.skuAccuracy)}   recall@${ctx.k} ${fmt(s.recallAtK)}`);
+      console.log(`zero typing ${fmt(s.zeroTyping)} (${s.autoCorrect} auto + ${s.oneTap} one-tap of ${s.goldOk})   suggestion acc ${fmt(s.suggestionAccuracy)}   model calls ${s.modelCalls}`);
+      if (usesModel) {
+        console.log(`valid JSON first try ${fmt(s.validJsonFirstTry)}   model errors ${s.modelErrors}   latency p50 ${fmt(s.p50ms === null ? null : Math.round(s.p50ms), ' ms')} p95 ${fmt(s.p95ms === null ? null : Math.round(s.p95ms), ' ms')}`);
+        for (const m of loaded) console.log(`loaded: ${m.name} ${(m.size / 1e9).toFixed(2)} GB (${(m.size_vram / 1e9).toFixed(2)} GB on GPU)`);
+      }
+      const bad = rows.filter((r) => r.outcome !== 'auto_correct' && r.outcome !== 'flagged_correctly');
+      for (const r of bad.slice(0, Number(args.show ?? 12))) {
+        const p = r.result.prediction;
+        console.log(`  ${r.outcome.padEnd(18)} ${r.id} "${r.text}" → ${p.sku ?? '∅'} ${p.qty ?? '∅'} ${p.unit ?? '∅'} [${p.reasons.join('; ')}] ask: ${p.question || '–'}  gold ${r.gold.sku ?? '∅'} ${r.gold.qty ?? '∅'} ${r.gold.unit ?? '∅'} ${r.gold.status}`);
+      }
+      if (bad.length > Number(args.show ?? 12)) console.log(`  … ${bad.length - Number(args.show ?? 12)} more in the results file`);
 
-    const file = writeNew(
-      `${outDir}/${stamp}_${method}${usesModel ? `_${model.replace(/[^a-z0-9.]+/gi, '-')}` : ''}`,
-      JSON.stringify(
-        {
-          method,
-          model: usesModel ? model : null,
-          label,
-          catalog: catalogPath,
-          cases: casesPath,
-          casesSha: casesHash,
-          settings: { k: ctx.k, minScore: ctx.minScore, minMargin: ctx.minMargin, numCtx: ctx.llm.numCtx, think: ctx.llm.think },
-          machine: { freeRamGb: freemem() / 1e9, freeDiskGb, loaded },
-          summary: s,
-          byTag: byTag(rows),
-          rows,
-        },
-        null,
-        2,
-      ),
-    );
-    appendFileSync(
-      summaryPath,
-      `| ${stamp} | ${label} | ${method} | ${usesModel ? model : '–'} | ${basename(casesPath)}@${casesHash} | ${s.n} | ${fmt(s.autoAcceptAccuracy)} | ${fmt(s.dangerousRate)} | ${fmt(s.zeroTyping)} | ${fmt(s.suggestionAccuracy)} | ${fmt(s.flagRecall)} | ${fmt(s.reviewLoad)} | ${fmt(s.skuAccuracy)} | ${fmt(s.recallAtK)} | ${s.modelCalls} | ${fmt(s.validJsonFirstTry)} | ${fmt(s.p50ms === null ? null : Math.round(s.p50ms), '')} | ${fmt(s.p95ms === null ? null : Math.round(s.p95ms), '')} |\n`,
-    );
-    console.log(`→ ${file}`);
+      const file = writeNew(
+        `${outDir}/${stamp}_${method}${usesModel ? `_${model.replace(/[^a-z0-9.]+/gi, '-')}` : ''}`,
+        JSON.stringify(
+          {
+            method,
+            model: usesModel ? model : null,
+            label,
+            catalog: catalogPath,
+            cases: casesPath,
+            casesSha: casesHash,
+            settings: { k: ctx.k, minScore: ctx.minScore, minMargin: ctx.minMargin, numCtx: ctx.llm.numCtx, think: ctx.llm.think },
+            machine: { freeRamGb: freemem() / 1e9, freeDiskGb, loaded },
+            summary: s,
+            byTag: byTag(rows),
+            rows,
+          },
+          null,
+          2,
+        ),
+      );
+      appendFileSync(
+        summaryPath,
+        `| ${stamp} | ${label} | ${method} | ${usesModel ? model : '–'} | ${basename(casesPath)}@${casesHash} | ${s.n} | ${fmt(s.autoAcceptAccuracy)} | ${fmt(s.dangerousRate)} | ${fmt(s.zeroTyping)} | ${fmt(s.suggestionAccuracy)} | ${fmt(s.flagRecall)} | ${fmt(s.reviewLoad)} | ${fmt(s.skuAccuracy)} | ${fmt(s.recallAtK)} | ${s.modelCalls} | ${fmt(s.validJsonFirstTry)} | ${fmt(s.p50ms === null ? null : Math.round(s.p50ms), '')} | ${fmt(s.p95ms === null ? null : Math.round(s.p95ms), '')} |\n`,
+      );
+      console.log(`→ ${file}`);
+    }
+  } finally {
+    await tracer.flush();
   }
   console.log(`\nSummary table: ${summaryPath}`);
 }
 
-main().catch((e) => {
-  console.error(e instanceof Error ? e.message : e);
-  process.exit(1);
-});
+if (import.meta.main) {
+  main().catch((e) => {
+    console.error(e instanceof Error ? e.message : e);
+    process.exit(1);
+  });
+}

@@ -33,7 +33,13 @@ export async function loadedModels(url: string): Promise<{ name: string; size: n
 
 let thinkUnsupported = false;
 
-async function chatOnce(cfg: LlmConfig, messages: ChatMessage[]): Promise<string> {
+interface ChatReply {
+  content: string;
+  promptTokens: number | null;
+  outputTokens: number | null;
+}
+
+async function chatOnce(cfg: LlmConfig, messages: ChatMessage[]): Promise<ChatReply> {
   const body: Record<string, unknown> = {
     model: cfg.model,
     messages,
@@ -59,27 +65,39 @@ async function chatOnce(cfg: LlmConfig, messages: ChatMessage[]): Promise<string
     }
     throw new Error(`Ollama ${res.status}: ${text.slice(0, 300)}`);
   }
-  const j = (await res.json()) as { message?: { content?: string } };
-  return j.message?.content ?? '';
+  const j = (await res.json()) as { message?: { content?: string }; prompt_eval_count?: number; eval_count?: number };
+  const count = (n: unknown) => (typeof n === 'number' && Number.isFinite(n) ? n : null);
+  return { content: j.message?.content ?? '', promptTokens: count(j.prompt_eval_count), outputTokens: count(j.eval_count) };
 }
+
+// Token counts for tracing, summed over calls; null until Ollama reports one.
+const add = (a: number | null, b: number | null) => (b === null ? a : (a ?? 0) + b);
 
 // One repair attempt on invalid JSON, then give up and let the row go to review.
 export async function decide(cfg: LlmConfig, messages: ChatMessage[]): Promise<{ proposal: ModelChoice | null; trace: LlmTrace }> {
   const start = performance.now();
   let raw = '';
+  let promptTokens: number | null = null;
+  let outputTokens: number | null = null;
+  const call = async (msgs: ChatMessage[]) => {
+    const r = await chatOnce(cfg, msgs);
+    promptTokens = add(promptTokens, r.promptTokens);
+    outputTokens = add(outputTokens, r.outputTokens);
+    return r.content;
+  };
   try {
-    raw = await chatOnce(cfg, messages);
+    raw = await call(messages);
     let proposal = parseModelOutput(raw);
-    if (proposal) return { proposal, trace: { ms: performance.now() - start, validFirstTry: true, retries: 0, raw } };
+    if (proposal) return { proposal, trace: { ms: performance.now() - start, validFirstTry: true, retries: 0, raw, promptTokens, outputTokens } };
     const repair: ChatMessage[] = [
       ...messages,
       { role: 'assistant', content: raw },
       { role: 'user', content: 'That reply did not match the required JSON fields. Reply again with JSON only.' },
     ];
-    raw = await chatOnce(cfg, repair);
+    raw = await call(repair);
     proposal = parseModelOutput(raw);
-    return { proposal, trace: { ms: performance.now() - start, validFirstTry: false, retries: 1, raw } };
+    return { proposal, trace: { ms: performance.now() - start, validFirstTry: false, retries: 1, raw, promptTokens, outputTokens } };
   } catch (e) {
-    return { proposal: null, trace: { ms: performance.now() - start, validFirstTry: false, retries: 0, raw, error: (e as Error).message } };
+    return { proposal: null, trace: { ms: performance.now() - start, validFirstTry: false, retries: 0, raw, error: (e as Error).message, promptTokens, outputTokens } };
   }
 }

@@ -13,6 +13,7 @@
     "label": "node --disable-warning=ExperimentalWarning src/label.ts",
     "test": "node --disable-warning=ExperimentalWarning --test test/*.test.ts",
     "eval": "node --disable-warning=ExperimentalWarning src/eval.ts",
+    "eval:trace": "node --env-file=.env --disable-warning=ExperimentalWarning src/eval.ts",
     "eval:baselines": "node --disable-warning=ExperimentalWarning src/eval.ts --methods exact,fuzzy",
     "split": "node --disable-warning=ExperimentalWarning src/split.ts",
     "check-leak": "node --disable-warning=ExperimentalWarning src/checkleak.ts",

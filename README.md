@@ -28,7 +28,7 @@ Someone retypes every line into Tally, Busy or Marg. ParchiMatch Lite reads each
 - **Learns the shop's shorthand.** Correct "lais peela" once, tick *Remember*, and it matches automatically next time. No training needed.
 - **Hinglish and Devanagari.** `petti`, `darjan`, `nag`, `bora`, `do petti`, `5 wala`, `10 ka`, `पारले जी 5 वाला 2 पेटी`.
 - **Private by construction.** Binds to 127.0.0.1, has no cloud calls, and every file is a CSV on the shop's disk.
-- **Zero dependencies.** TypeScript run directly by Node 24, `node:http`, plain HTML/JS. Nothing to `npm install`.
+- **Zero dependencies in the app.** TypeScript run directly by Node 24, `node:http`, plain HTML/JS. Nothing to `npm install`. Only the optional [Sentry tracing of an evaluation](docs/EVALUATION.md#tracing-an-evaluation-with-sentry-optional) installs one package, on demand; the app never uses it.
 - **Measured, not claimed.** An evaluation harness, a locked held-out test set, a leak check, and a seeded synthetic benchmark.
 
 ## Results (locked synthetic test, 80 lines)

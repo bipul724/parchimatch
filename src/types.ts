@@ -82,6 +82,8 @@ export interface LlmTrace {
   retries: number;
   raw: string;
   error?: string;
+  promptTokens?: number | null; // Ollama prompt_eval_count, summed over the repair retry; null if Ollama sent none
+  outputTokens?: number | null; // Ollama eval_count, likewise
 }
 
 export interface MethodResult {

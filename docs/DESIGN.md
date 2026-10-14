@@ -86,6 +86,7 @@ On the locked 80-line synthetic test (current code, Gemma 4 E2B): hybrid 88.2% w
 **Chosen:** TypeScript run directly by Node 24, built-in `node:http` and `node:test`, vanilla HTML/JS, CSV files for everything persistent.
 **Why:** the target machine has 8 GB RAM and was down to under 1 GB of free disk during testing. No `node_modules`, no build step, no database. A shopkeeper (or their nephew) can open every file in a spreadsheet.
 **Rejected:** Next.js, Docker, Postgres/pgvector, a vector database. They add memory and disk cost with no measured benefit at 100–300 catalogue items.
+**Exception (14 Oct):** optional [Sentry tracing of evaluations](EVALUATION.md#tracing-an-evaluation-with-sentry-optional) needs `@sentry/node`. It's installed on demand with `npm install --no-save`, never listed in `package.json`, and never loaded by the app.
 
 ### D9. Measure before claiming
 **Chosen:** a harness that scores every method on the same labelled lines, a locked held-out test set, a leak check, and a seeded synthetic data generator.

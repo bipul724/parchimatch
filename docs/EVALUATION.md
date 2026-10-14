@@ -158,6 +158,7 @@ It shows the parsed quantity/unit and eight candidate products, sorted by name (
 | `npm test` | Unit and integration tests |
 | `npm run eval:baselines` | exact + fuzzy on the fixture |
 | `npm run eval -- --catalog … --cases … --methods exact,fuzzy,hybrid,llm-cand --label …` | Full comparison |
+| `npm run eval:trace -- …` | Same, traced to Sentry using `SENTRY_DSN` from `.env` (synthetic or fixture data only, never a locked set) |
 | `npm run label -- --catalog … --in … --out …` | Label human-written order lines (resumable) |
 | `npm run split -- --in … --test 30` | Lock a held-out test set |
 | `npm run check-leak -- --test … --candidate …` | Near-duplicate check |
@@ -167,3 +168,42 @@ It shows the parsed quantity/unit and eight candidate products, sorted by name (
 Useful eval flags: `--model`, `--k` (candidates, default 8), `--min-score` (0.5), `--min-margin` (0.08), `--ctx` (2048), `--think`, `--limit`, `--show`.
 
 Result files are never overwritten. They're named by the second (`<timestamp>_<method>.json`); if that name is already taken, for example by another run in the same second, the new file gets `-2`, `-3`, … before `.json`. `summary.md` gets one appended row per run.
+
+## Tracing an evaluation with Sentry (optional)
+
+An evaluation can send each order line to [Sentry Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/node/agent-tracing/manual-instrumentation/) as one agent run, to see where time and tokens go and why a line went amber. It's off unless `SENTRY_DSN` is set, and it exists only in `src/eval.ts`.
+
+**Setup:**
+
+1. Install the SDK without adding it to `package.json`:
+   ```bash
+   npm install --no-save @sentry/node
+   ```
+   Without it, a traced run stops with `Tracing needs @sentry/node: npm install --no-save @sentry/node`.
+2. Put the project's DSN in `.env` in the project folder (`.env` and `.env.*` are gitignored):
+   ```bash
+   SENTRY_DSN=https://<key>@<org>.ingest.sentry.io/<project>
+   ```
+3. Run the harness with `npm run eval:trace`, which loads `.env` for that one command. Eval doesn't read `.env` by itself, so a plain `npm run eval` (and `npm test`) stays untraced:
+   ```bash
+   npm run eval:trace -- --catalog data/synthetic/catalog.csv --cases data/synthetic/dev.jsonl --methods hybrid --label traced
+   ```
+   Tracing is refused for a locked test set (a cases file with a `.lock.json` next to it), because a traced run would be one more locked-test run. Trace the practice set instead.
+
+**Span tree** (Sentry's manual agent-tracing conventions; complex values are JSON strings, messages use `{role, parts: [{type: "text", content}]}`):
+
+- `eval <method> <label>`: one per method run, with the method, model, cases file and its sha, `k` and min-score.
+  - `invoke_agent parchimatch-<method>` (op `gen_ai.invoke_agent`): one per order line. Input message = the line; output message = the row as JSON (sku, qty, unit, status, question); `parchimatch.case_id`, `parchimatch.outcome`, `parchimatch.status`, `parchimatch.reasons`; token counts when the model was called.
+    - `execute_tool fuzzy_match`: top candidate, top score and lead.
+    - `chat <model>` (op `gen_ai.chat`), only when the model is called: provider `ollama`, temperature 0, system instructions, input and output messages, input and output tokens (Ollama's `prompt_eval_count` and `eval_count`, summed over the repair retry). A model failure marks the span as an error with `error.type` `http_<status>`, `request_failed` or `invalid_json`.
+    - `execute_tool safety_rules`: the `finalize()` step and the rules that fired.
+
+Runs use `environment: "eval"`, `tracesSampleRate: 1.0` and the git short sha as `release`.
+
+**What is sent:** synthetic or fixture order lines, the catalogue candidates in the prompt, the system prompt, the model's replies, token counts, timings, and each row's outcome, status and reasons. Sentry's SDK may add its own spans for the HTTP calls to the local Ollama.
+
+**What is never sent:**
+- Anything from the app. `src/server.ts` and `src/start.ts` never load tracing, and a test checks every module they import.
+- Real or human-written orders. Tracing is refused (one line, exit 1) unless both `--cases` and `--catalog` resolve inside `data/synthetic/` or `data/fixture/`.
+
+Tracing only observes. A test checks that rows and summary numbers are identical with tracing on and off.

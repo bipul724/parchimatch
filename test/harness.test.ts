@@ -24,7 +24,8 @@ function scratch(t: TestContext): string {
 
 function run(file: string, args: string[]) {
   const result = spawnSync(process.execPath, [...process.execArgv.filter((arg) => !arg.startsWith('--test')), join(root, file), ...args], {
-    cwd: root, encoding: 'utf8', timeout: 20_000,
+    // A SENTRY_DSN in the developer's shell would switch eval tracing on (A12); these runs stay untraced.
+    cwd: root, encoding: 'utf8', timeout: 20_000, env: { ...process.env, SENTRY_DSN: '' },
   });
   assert.ifError(result.error);
   assert.equal(result.signal, null, result.stderr);

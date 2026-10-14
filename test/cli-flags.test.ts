@@ -11,12 +11,14 @@ import { fileURLToPath } from 'node:url';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const temp = mkdtempSync(join(tmpdir(), 'parchimatch-flags-'));
+// A SENTRY_DSN in the developer's shell would switch eval tracing on (A12); these runs stay untraced.
+const env = { ...process.env, SENTRY_DSN: '' };
 after(() => rmSync(temp, { recursive: true, force: true }));
 
 // Nothing here may reach a real Ollama or write into the project: a closed local port and a temp data folder.
 function run(file: string, args: string[]) {
   const base = file === 'src/server.ts' ? ['--data', join(temp, 'data'), '--url', 'http://127.0.0.1:9'] : ['--out', join(temp, 'out'), '--url', 'http://127.0.0.1:9'];
-  const result = spawnSync(process.execPath, ['--disable-warning=ExperimentalWarning', join(root, file), ...base, ...args], { cwd: root, encoding: 'utf8', timeout: 10_000 });
+  const result = spawnSync(process.execPath, ['--disable-warning=ExperimentalWarning', join(root, file), ...base, ...args], { cwd: root, encoding: 'utf8', timeout: 10_000, env });
   assert.ifError(result.error);
   assert.equal(result.signal, null, `${file} ${args.join(' ')} did not exit by itself: ${result.stdout}${result.stderr}`);
   return { status: result.status, stderr: result.stderr, output: result.stdout + result.stderr };
@@ -112,7 +114,7 @@ test('eval: an existing results file is never overwritten; the new one gets -2',
   // Occupy every name this run could pick in the next 20 seconds, as an earlier run in the same second would.
   const now = Date.now();
   for (let s = -1; s < 20; s++) for (const m of ['exact', 'fuzzy']) writeFileSync(join(out, `${stampOf(now + s * 1000)}_${m}.json`), 'earlier run');
-  const r = spawnSync(process.execPath, evalArgs(out), { cwd: root, encoding: 'utf8', timeout: 20_000 });
+  const r = spawnSync(process.execPath, evalArgs(out), { cwd: root, encoding: 'utf8', timeout: 20_000, env });
   assert.equal(r.status, 0, r.stdout + r.stderr);
   const files = readdirSync(out).filter((f) => f.endsWith('.json'));
   for (const f of files.filter((f) => !/-2\.json$/.test(f))) assert.equal(readFileSync(join(out, f), 'utf8'), 'earlier run', `${f} was overwritten`);
@@ -123,7 +125,7 @@ test('eval: an existing results file is never overwritten; the new one gets -2',
 
 test('eval: two runs started together into one --out folder keep all four per-row files and four summary rows', async () => {
   const out = join(temp, 'results-parallel');
-  const procs = [0, 1].map(() => spawn(process.execPath, evalArgs(out), { cwd: root, stdio: 'ignore' }));
+  const procs = [0, 1].map(() => spawn(process.execPath, evalArgs(out), { cwd: root, stdio: 'ignore', env }));
   const codes = await Promise.all(procs.map(async (p) => (await once(p, 'exit'))[0]));
   assert.deepEqual(codes, [0, 0]);
   const files = readdirSync(out).filter((f) => f.endsWith('.json'));

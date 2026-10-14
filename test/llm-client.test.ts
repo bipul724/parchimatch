@@ -34,3 +34,24 @@ test('invalid JSON then valid JSON repairs exactly once and returns a usable pro
   assert.equal(requests[0].body.options.temperature, 0);
   assert.equal(requests[0].body.options.seed, 7);
 });
+
+test('the trace carries Ollama token counts, summed over the repair retry, and null when Ollama sends none', async (t) => {
+  const reply = (content: unknown, prompt?: number, output?: number) => ({ body: { message: { content: typeof content === 'string' ? content : JSON.stringify(content) }, ...(prompt === undefined ? {} : { prompt_eval_count: prompt, eval_count: output }) } });
+  const ok = { evidence: 'parle g', sku: 'PRLG-5', status: 'ok' };
+  const stub = await startOllamaStub({ steps: [reply(ok, 120, 15), reply('not json', 100, 5), reply(ok, 110, 9), reply(ok)] });
+  t.after(() => stub.close());
+  const cfg = { url: stub.url, model: stub.model, think: false, numCtx: 2048 };
+  const msgs = [{ role: 'user' as const, content: 'parle g 5 rs 2 ctn' }];
+  const one = await decide(cfg, msgs);
+  assert.deepEqual([one.trace.promptTokens, one.trace.outputTokens], [120, 15]);
+  const repaired = await decide(cfg, msgs);
+  assert.equal(repaired.trace.retries, 1);
+  assert.deepEqual([repaired.trace.promptTokens, repaired.trace.outputTokens], [210, 14]);
+  const none = await decide(cfg, msgs);
+  assert.deepEqual(none.proposal, ok);
+  assert.deepEqual([none.trace.promptTokens, none.trace.outputTokens], [null, null]);
+  stub.enqueue({ status: 500, error: 'boom' });
+  const failed = await decide(cfg, msgs);
+  assert.equal(failed.proposal, null);
+  assert.deepEqual([failed.trace.promptTokens, failed.trace.outputTokens], [null, null]);
+});

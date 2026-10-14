@@ -121,6 +121,7 @@ parchimatch/
 │   ├── learned.ts          learned-names CSV
 │   ├── orderlines.ts       order splitting
 │   ├── eval.ts             evaluation harness
+│   ├── trace.ts            opt-in Sentry agent tracing for eval only (synthetic/fixture data; never loaded by the app)
 │   ├── split.ts            lock a held-out test set
 │   ├── checkleak.ts        near-duplicate check
 │   ├── exporttrain.ts      fine-tuning data export
