@@ -15,7 +15,7 @@ The working task list for ParchiMatch Lite. Read [context.md](context.md) first.
 
 ## Code tasks (coding agent)
 
-**Order of work for the coding agent (decided 13 Oct):** A7 → A8 → A3 → A5 → A4 → A9 (all done 13 Oct). A6 not doing (C6). A10 (fresh-clone check) done; **A11 (clean-clone follow-ups) next**. A7 and A8 are small correctness fixes; A3 and A5 matter most for the demo; A4 feeds the human-written test set.
+**Order of work for the coding agent (decided 13 Oct):** A7 → A8 → A3 → A5 → A4 → A9 (all done 13 Oct). A6 not doing (C6). A10 and A11 done. **No agent tasks are open; the code is frozen for the entry.** A7 and A8 are small correctness fixes; A3 and A5 matter most for the demo; A4 feeds the human-written test set.
 
 ### A1. Numbers with commas: never split, read correctly, never guess: `done` (critical, revised 13 Oct)
 **Review (Claude, 13 Oct):** accepted. 170/170 tests; acceptance lines verified through the pipeline (`1,500 bag` → green 1500 bag; `1,5` → amber S16; `1,00,000` → amber S11; comma-separated items still split). Old-vs-new on all 440 practice/fixture/test lines × exact+fuzzy: **0 outcomes changed**. Locked test hash unchanged.
@@ -122,7 +122,8 @@ The working task list for ParchiMatch Lite. Read [context.md](context.md) first.
 - `npm test` passes.
 - The locked hash is unchanged.
 
-### A11. Clean-clone follow-ups (from A10): `todo`
+### A11. Clean-clone follow-ups (from A10): `done`
+**Review (Claude, 14 Oct):** accepted. Checked by hand: a missing `--in` and a missing `--catalog` each print one plain line and exit 1. Two evals started together into one folder kept both files (`…-2.json`). 195/195 tests; locked hash unchanged. Decisions on the open questions: (1) an untested warning string is fine; (2) a deleted default catalogue is a broken checkout, not a user error, so no change; (3) the DATA_FORMATS update was right.
 **Why:** the fresh-clone check passed, but four rough edges would hit a judge or a new user.
 **Do (test-first for code):**
 1. **`src/label.ts`:** a missing or unreadable `--in` file stops with one line, e.g. `Can't read data/human/raw.txt: no such file. Save the order lines there first, one per line.` Exit 1, no stack trace. The README label paragraph says to save the lines in that file first.
