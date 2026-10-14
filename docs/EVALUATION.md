@@ -180,7 +180,7 @@ An evaluation can send each order line to [Sentry Agent Tracing](https://docs.se
    npm install --no-save @sentry/node
    ```
    Without it, a traced run stops with `Tracing needs @sentry/node: npm install --no-save @sentry/node`.
-2. Put the project's DSN in `.env` in the project folder (`.env` and `.env.*` are gitignored):
+2. Copy `.env.example` to `.env` (`cp .env.example .env`) and put the project's DSN in it (`.env` is gitignored; only `.env.example` is committed):
    ```bash
    SENTRY_DSN=https://<key>@<org>.ingest.sentry.io/<project>
    ```
