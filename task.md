@@ -275,7 +275,7 @@ Anything else goes in the report as a question. Delete the temporary folder at t
 | U3 | Record a 60–90 s demo with Wi-Fi off (sample order 03), save as `site/assets/demo.mp4` | todo |
 | U4 | Commit and push in reviewed batches (no AI co-author lines); enable GitHub Pages (Settings → Pages → Source: GitHub Actions) | Pages **done 15 Oct**: https://bipul724.github.io/parchimatch/ is live. Claude checked all 7 pages (200), the live numbers (205 tests, 1.5/2.6 s), internal links (only `assets/demo.mp4` is missing, waiting on U3; the poster is labelled "coming soon") and phone width (no horizontal scroll). Next: the .tech domain. |
 | U5 | Rewrite the DEV post in your own voice, add screenshots/video, publish with `#devchallenge #hf26challenge`, and disclose AI help in the post | todo |
-| U6 | **Entire (after labelling)**: `brew install --cask entireio/tap/entire` → `entire enable -y --agent claude-code` → Claude turns on email redaction (`redaction.pii.enabled`) and runs `entire import claude-code --dry-run` → import **only the coding agent's A1–A14 sessions**, each checked by Claude first (`--session ID`). Never this review session: it holds emails, a Sentry key screenshot and another company's text. → `entire login` (GitHub App on this repo only) → push → links go in the post. Answer `n` to any commit-link prompt, so commit messages get no Entire trailers. Category had 0 rivals on 15 Oct (405 posts scanned). | todo |
+| U6 | Entire | **not doing (15 Oct, owner's decision):** sharing sessions on Entire would publish the instructions typed into them, and the owner wants none of their instructions online. Nothing was installed. |
 
 ## Not doing (decided)
 
