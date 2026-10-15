@@ -204,7 +204,8 @@ The working task list for ParchiMatch Lite. Read [context.md](context.md) first.
 - `npm test` passes, and the locked hash is unchanged.
 - Claude confirms the first real run is green on GitHub after the owner pushes.
 
-### A14. Labeller splits order lines exactly like the app, and can skip non-items: `review` (bug fix, allowed under the freeze)
+### A14. Labeller splits order lines exactly like the app, and can skip non-items: `done`
+**Review (Claude, 15 Oct):** accepted. A live piped run worked: the greeting was skipped, the comma line became `h002-1`/`-2`, the `1)` was stripped, and the full line was shown. 210 tests (209 + 1 skipped locally, only because `@sentry/node` is installed); locked hash unchanged. Open questions 1–3: fine as they are (fixing a wrong label or skip by hand is acceptable for one owner). (bug fix, allowed under the freeze)
 **Why (found by the agent, 15 Oct):** the app splits pasted text with `splitOrder()` (`src/orderlines.ts`): new lines, commas not between digits, `;`, and it strips `1)` and `-` bullets. `npm run label` splits only on new lines, so `parle g 2 petti, maggi 1 ctn` would get one gold label for two items. Friends' WhatsApp messages also contain greetings ("Hi bhaiya", "thanks"), which must not enter the test set as order items.
 **Decision (Claude):** the labeller uses the app's splitter; the owner pastes messages unedited. Splitting by hand was rejected, because it would quietly correct the splitter's mistakes and flatter the score.
 **Do (test-first):**
@@ -269,7 +270,7 @@ Anything else goes in the report as a question. Delete the temporary folder at t
 | ID | Task | Status |
 |---|---|---|
 | U1 | Click through `docs/MANUAL_TEST_CHECKLIST.md` in a browser with other apps closed | todo |
-| U2 | Ask 3–5 friends/relatives to type orders for 15 catalogue items, the way they'd really WhatsApp them (feeds A4/C8) | **doing (15 Oct)**: no shopkeeper available, so the owner chose the friends option. The 15 items are fixed in EVALUATION.md. Raw replies go to `data/human/raw.txt` (gitignored), then the owner labels with `npm run label`, then Claude locks and scores once (C8). |
+| U2 | Ask 3–5 friends/relatives to type orders for 15 catalogue items, the way they'd really WhatsApp them (feeds A4/C8) | **Round 1 excluded (AI-written); round 2: 3 hand-typed replies (6 items) in raw.txt, 11 pieces, 3 multi-product. Owner labels next; then Claude locks and scores (C8).** Earlier note: **doing (15 Oct)**: no shopkeeper available, so the owner chose the friends option. The 15 items are fixed in EVALUATION.md. Raw replies go to `data/human/raw.txt` (gitignored), then the owner labels with `npm run label`, then Claude locks and scores once (C8). |
 | U3 | Record a 60–90 s demo with Wi-Fi off (sample order 03), save as `site/assets/demo.mp4` | todo |
 | U4 | Commit and push in reviewed batches (no AI co-author lines); enable GitHub Pages (Settings → Pages → Source: GitHub Actions) | Pages **done 15 Oct**: https://bipul724.github.io/parchimatch/ is live. Claude checked all 7 pages (200), the live numbers (205 tests, 1.5/2.6 s), internal links (only `assets/demo.mp4` is missing, waiting on U3; the poster is labelled "coming soon") and phone width (no horizontal scroll). Next: the .tech domain. |
 | U5 | Rewrite the DEV post in your own voice, add screenshots/video, publish with `#devchallenge #hf26challenge`, and disclose AI help in the post | todo |

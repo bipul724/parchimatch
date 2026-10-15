@@ -155,6 +155,11 @@ The synthetic generator encodes one author's idea of shorthand. The cheapest ind
 
 The writers are friends of the author, not shopkeepers. Results from this set are reported as "order lines typed by N people other than the author", never as shop data.
 
+**What actually happened (15 Oct 2026):**
+- **Round 1 excluded.** The first four replies to the 15-item message were AI-written. All four had the same 17-line shape, with every item in list order, and one was a light rewording of another; the friends confirmed it. They're kept aside in `data/human/excluded-ai-replies.txt` and never scored.
+- **Round 2 used.** The ask was cut to **6 items**, with an explicit "please type it yourself, no ChatGPT": Parle-G ₹5 pack, Tata Salt 1 kg, Fortune Soyabean Oil 1 L pouch, Amul Butter 100 g, Dairy Milk ₹20 bar, Lifebuoy ₹10 bar. **3 hand-typed replies** went into `data/human/raw.txt`.
+- **Observed before any matching.** The app's splitter turns the 3 replies into 11 pieces, and 3 of them hold several products. Two are joined by "aur", and one reply has no separators at all. The splitter was **not** changed before scoring, because that would be tuning on the test. Labellers mark those pieces `n` with the tag `bad_split`.
+
 To label: paste the messages exactly as sent, unedited, into a plain text file (e.g. `data/human/raw.txt`), with a blank line between people if you like, then run
 
 ```bash
