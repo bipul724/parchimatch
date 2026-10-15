@@ -3,6 +3,7 @@ import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:pat
 import { createInterface } from 'node:readline';
 import { bySku, loadCatalog, numberNamePhrases } from './catalog.ts';
 import { retrieve } from './retrieve.ts';
+import { splitOrder } from './orderlines.ts';
 import { itemLabel } from './review.ts';
 import { parse, UNIT_WORDS } from './text.ts';
 import { UNITS } from './types.ts';
@@ -11,9 +12,12 @@ import { ensureDir, fileProblem, missingValue, parseArgs, readJsonl } from './ut
 
 // Labels order lines written by other people, for a human-written test set (docs/EVALUATION.md).
 // Usage: npm run label -- --catalog <csv> --in <raw.txt> --out <labelled.jsonl>
-// One order line per input line. Each answer is appended at once, so stopping (Ctrl+C or end of input) loses
-// nothing; running the same command again skips ids already in --out. The id is the input line number (h007),
-// so editing the input file afterwards would mislabel lines: a changed line stops the run instead.
+// Paste messages unedited, one message line per input line. Each line is cut into items with the app's own
+// splitOrder() (commas, ";", bullets, numbering), so the test set is labelled on exactly the pieces the app matches;
+// splitting by hand would quietly fix the splitter's mistakes. Ids come from the line number, plus the item's
+// position when a line has several (h007, or h007-1, h007-2). Each answer is appended at once, so stopping
+// (Ctrl+C or end of input) loses nothing; a rerun skips ids already labelled in --out or skipped in <out>.skipped.
+// Editing the input afterwards would mislabel items, so a changed item stops the run instead.
 
 const root = resolve(import.meta.dirname, '..');
 const USAGE = 'npm run label -- --catalog <csv> --in <raw.txt> --out <labelled.jsonl>';
@@ -94,21 +98,38 @@ async function main() {
     const missing = (e as { code?: string }).code === 'ENOENT';
     fail(`Can't read ${String(args.in)}: ${fileProblem(e)}.${missing ? ' Save the order lines there first, one per line.' : ''}`);
   }
-  const lines = raw.split(/\r?\n/).map((text, i) => ({ id: `h${String(i + 1).padStart(3, '0')}`, n: i + 1, text: text.trim() })).filter((l) => l.text);
+  const lines = raw.split(/\r?\n/).map((text, i) => ({ n: i + 1, text: text.trim() })).filter((l) => l.text);
+  const items = lines.flatMap((l) => {
+    const pieces = splitOrder(l.text);
+    const base = `h${String(l.n).padStart(3, '0')}`;
+    return pieces.map((text, k) => ({ id: pieces.length === 1 ? base : `${base}-${k + 1}`, n: l.n, line: l.text, k: k + 1, of: pieces.length, text }));
+  });
+  const where = (item: (typeof items)[number]) => `line ${item.n}${item.of > 1 ? `, item ${item.k} of ${item.of}` : ''}`;
 
+  const skippedPath = `${outPath}.skipped`;
   const done = new Map((existsSync(outPath) ? readJsonl<Case>(outPath) : []).map((c) => [c.id, c.text]));
-  for (const l of lines) {
-    if (done.has(l.id) && done.get(l.id) !== l.text) fail(`${l.id} in ${outPath} is "${done.get(l.id)}", but it doesn't match line ${l.n} of ${inPath} ("${l.text}"). The input changed; restore it or use a new --out.`);
+  const skippedBefore = new Map(
+    (existsSync(skippedPath) ? readFileSync(skippedPath, 'utf8').split('\n').filter(Boolean) : []).map((row) => {
+      const [id, ...text] = row.split('\t');
+      return [id, text.join('\t')];
+    }),
+  );
+  for (const item of items) {
+    for (const [saved, file] of [[done, outPath], [skippedBefore, skippedPath]] as const) {
+      if (saved.has(item.id) && saved.get(item.id) !== item.text) fail(`${item.id} in ${file} is "${saved.get(item.id)}", but it doesn't match ${where(item)} in ${inPath} ("${item.text}"). The input changed; restore it or use a new --out.`);
+    }
   }
   if (!existsSync(outPath)) {
     ensureDir(outPath);
     appendFileSync(outPath, `// Human-written order lines from ${basename(inPath)}, labelled with npm run label against ${basename(catalogPath)} on ${new Date().toISOString().slice(0, 10)}. Not synthetic.\n`);
   }
 
-  const todo = lines.filter((l) => !done.has(l.id));
-  let labelled = lines.length - todo.length;
+  const todo = items.filter((item) => !done.has(item.id) && !skippedBefore.has(item.id));
+  let labelled = items.filter((item) => done.has(item.id)).length;
+  let skipped = items.filter((item) => skippedBefore.has(item.id)).length;
+  const plural = (n: number) => `${n} item${n === 1 ? '' : 's'}`;
   const input = answers();
-  console.log(`${lines.length} order lines, ${labelled} already labelled, ${todo.length} to go. Ctrl+C stops; run again to continue.`);
+  console.log(`${plural(items.length)} from ${lines.length} line${lines.length === 1 ? '' : 's'}: ${labelled} labelled, ${skipped} skipped, ${todo.length} to go. Ctrl+C stops; run again to continue.`);
 
   for (const [i, l] of todo.entries()) {
     const parsed = parse(l.text, { namePhrases });
@@ -121,18 +142,27 @@ async function main() {
       ...(parsed.unknownUnit ? [`unknown unit "${parsed.unknownUnit}"`] : []),
       ...(parsed.unclearNumber ? [`unclear number "${parsed.unclearNumber}"`] : []),
     ];
-    console.log(`\n[${i + 1}/${todo.length}] ${l.id}  ${l.text}\n  parsed: ${hints.join(' · ')}`);
+    console.log(`\n[${i + 1}/${todo.length}] ${l.id}  ${l.text}\n  ${where(l)}: ${l.line}\n  parsed: ${hints.join(' · ')}`);
     top.forEach((item, k) => console.log(`  ${k + 1}) ${item.sku}  ${itemLabel(item)}`));
 
     let sku: string | null | undefined;
-    while (sku === undefined) {
-      const a = await input.ask('Product [number, a SKU, or n = needs review / not stocked]: ');
+    let skip = false;
+    while (sku === undefined && !skip) {
+      const a = await input.ask('Product [number, a SKU, n = needs review / not stocked, s = skip: not an order item]: ');
       if (a === null) break;
       const typed = catalog.find((c) => c.sku.toLowerCase() === a.toLowerCase());
-      if (a.toLowerCase() === 'n') sku = null;
+      if (a.toLowerCase() === 's') skip = true;
+      else if (a.toLowerCase() === 'n') sku = null;
       else if (/^\d+$/.test(a) && Number(a) >= 1 && Number(a) <= top.length) sku = top[Number(a) - 1].sku;
       else if (typed) sku = typed.sku;
       else console.log(`  "${a}" is not a number from the list or a SKU in the catalogue.`);
+    }
+    // Greetings, thanks and notes are not order items: kept out of the test set, but recorded so a rerun doesn't ask again.
+    if (skip) {
+      appendFileSync(skippedPath, `${l.id}\t${l.text}\n`);
+      skipped++;
+      console.log('  → skipped (not an order item)');
+      continue;
     }
     if (sku === undefined) break;
     if (sku) console.log(`  → ${sku}  ${itemLabel(index.get(sku)!)}`);
@@ -184,8 +214,8 @@ async function main() {
     labelled++;
   }
   input.close();
-  const left = lines.length - labelled;
-  console.log(left ? `\nStopped. ${labelled} line${labelled === 1 ? '' : 's'} labelled so far, ${left} to go, in ${outPath}. Run the same command again to continue.` : `\nDone. ${labelled} of ${lines.length} lines labelled in ${outPath}.`);
+  const left = items.length - labelled - skipped;
+  console.log(left ? `\nStopped. ${plural(labelled)} labelled, ${skipped} skipped, ${left} to go, in ${outPath}. Run the same command again to continue.` : `\nDone. ${plural(labelled)} labelled, ${skipped} skipped (${plural(items.length)}) in ${outPath}.`);
 }
 
 if (import.meta.main) {

@@ -91,13 +91,13 @@ npm run eval -- --catalog data/synthetic/catalog.csv --cases data/synthetic/test
 
 Results go to `results/` (every row with reasons, a per-tag breakdown, and a running `summary.md`). To evaluate on a real shop's data, lock a test set first: [EVALUATION.md](docs/EVALUATION.md).
 
-To label order lines written by other people for a human-written test set, first save the lines in `data/human/raw.txt`, one order line per line, then run:
+To label order lines written by other people for a human-written test set, first paste their messages, unedited, into `data/human/raw.txt`, then run:
 
 ```bash
 npm run label -- --catalog data/synthetic/catalog.csv --in data/human/raw.txt --out data/human/labelled.jsonl
 ```
 
-For each line it shows the parsed quantity and unit and eight candidate products, sorted by name and without scores, then asks for the product (a number from the list or any SKU), quantity, unit, whether a careful person could enter it without asking (y or n, no default), and tags. It saves after every line and continues where it stopped. It refuses to write into `data/synthetic/` or a locked file.
+It cuts each line into items exactly as the app does (commas, `;`, bullets, numbering). For each item it shows the parsed quantity and unit and eight candidate products, sorted by name and without scores. Then it asks for the product (a number from the list, any SKU, `n` for needs review, or `s` to skip a greeting or note), quantity, unit, whether a careful person could enter it without asking (y or n, no default), and tags. A piece the splitter cut wrongly is labelled `n` and tagged `bad_split`. It saves after every answer and continues where it stopped. It refuses to write into `data/synthetic/` or a locked file.
 
 ## Continuous integration
 

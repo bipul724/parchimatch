@@ -143,13 +143,27 @@ The synthetic generator encodes one author's idea of shorthand. The cheapest ind
 2. Ask each to type the order as they'd really WhatsApp it to a supplier. Show no examples.
 3. Label their lines, lock them as `data/human/test.jsonl`, and run every method once.
 
-To label: save the lines as plain text, one order line per line (e.g. `data/human/raw.txt`), then run
+**The 15 items used (chosen 15 Oct 2026, before any lines were collected).** They cover the hard cases: price variants, sizes, cartons, dozens and bags. Each is listed only by its plain product name and pack, with no shorthand examples:
+
+| # | Item | # | Item | # | Item |
+|---|---|---|---|---|---|
+| 1 | Parle-G biscuit, ₹5 pack | 6 | Tata Tea Premium, 500 g | 11 | Dairy Milk, ₹20 bar |
+| 2 | Maggi Masala Noodles, 70 g | 7 | Amul Butter, 100 g | 12 | Colgate Strong Teeth, 200 g |
+| 3 | Tata Salt, 1 kg | 8 | Lay's Magic Masala, ₹10 pack | 13 | Lifebuoy soap, ₹10 bar |
+| 4 | Aashirvaad Atta, 10 kg | 9 | Haldiram's Aloo Bhujia, 200 g | 14 | Surf Excel Easy Wash, 1 kg |
+| 5 | Fortune Soyabean Oil, 1 L pouch | 10 | Thums Up, 2 L | 15 | Vim bar, ₹10 |
+
+The writers are friends of the author, not shopkeepers. Results from this set are reported as "order lines typed by N people other than the author", never as shop data.
+
+To label: paste the messages exactly as sent, unedited, into a plain text file (e.g. `data/human/raw.txt`), with a blank line between people if you like, then run
 
 ```bash
 npm run label -- --catalog data/synthetic/catalog.csv --in data/human/raw.txt --out data/human/labelled.jsonl
 ```
 
-It shows the parsed quantity/unit and eight candidate products, sorted by name (numbers by value, so ₹5 comes before ₹10) and without scores, and asks for the product (a number from the list, any SKU, or `n` for needs review / not stocked), the quantity and unit **as ordered**, whether a careful person could enter the line without asking (`y` or `n`, with no default, so Enter asks again; only when product, quantity and unit are all known; otherwise it's `needs_review`), and tags. The list is drawn from fuzzy's eight candidates (the same ones the model sees), so a labeller can still be nudged toward them; any SKU can be typed instead. Each answer is saved at once in the [labelled JSONL format](DATA_FORMATS.md#labelled-order-lines-jsonl), with ids from the input line numbers (`h007`). Running the same command again skips lines already labelled; if a labelled line's text no longer matches the input, it stops. It never writes into `data/synthetic/` or a file with a `.lock.json`.
+Each input line is cut into items with the app's own `splitOrder()` (new lines, commas not between digits, `;`, and `-`/`1)` bullets are stripped), so the test set is labelled on exactly the pieces the app matches. Splitting by hand would quietly fix the splitter's mistakes and flatter the score. For each item it shows the full original line and `item 2 of 3`, the parsed quantity/unit and eight candidate products, sorted by name (numbers by value, so ₹5 comes before ₹10) and without scores, and asks for the product (a number from the list, any SKU, `n` for needs review / not stocked, or `s` to skip something that isn't an order item, such as a greeting, thanks or a note), the quantity and unit **as ordered**, whether a careful person could enter the line without asking (`y` or `n`, with no default, so Enter asks again; only when product, quantity and unit are all known; otherwise it's `needs_review`), and tags. The list is drawn from fuzzy's eight candidates (the same ones the model sees), so a labeller can still be nudged toward them; any SKU can be typed instead. Each answer is saved at once in the [labelled JSONL format](DATA_FORMATS.md#labelled-order-lines-jsonl), with ids from the input line number plus the item's position when a line has several (`h007`, or `h007-1`, `h007-2`). Skipped items go to `<out>.skipped` (`id`, a tab, the text) and never into the labelled file. Running the same command again skips items already labelled or skipped; if a saved item's text no longer matches the input, it stops. The final summary counts items labelled and skipped.
+
+**A piece the splitter cut wrongly** (for example `maggi, 4 pack 1 ctn` becomes `maggi` and `4 pack 1 ctn`, the known limitation C02): label each piece `n` (needs review) and tag it `bad_split`. The gold then says what a careful person would do with that piece, the splitter's mistakes count against the score, and the tag makes them easy to count. It never writes into `data/synthetic/` or a file with a `.lock.json`.
 
 ## Commands
 

@@ -9,6 +9,7 @@ import { test } from 'node:test';
 import type { TestContext } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { bySku, loadCatalog } from '../src/catalog.ts';
+import { splitOrder } from '../src/orderlines.ts';
 import { UNITS } from '../src/types.ts';
 import type { Case } from '../src/types.ts';
 import { readJsonl } from '../src/util.ts';
@@ -34,7 +35,7 @@ function label(args: string[], answers: string[]) {
 }
 
 function wellFormed(c: Case) {
-  assert.match(c.id, /^h\d{3,}$/);
+  assert.match(c.id, /^h\d{3,}(-\d+)?$/); // h007, or h007-2 for the 2nd item of a line
   assert.equal(typeof c.text, 'string');
   assert.deepEqual(Object.keys(c.gold).sort(), ['qty', 'sku', 'status', 'unit']);
   assert.ok(c.gold.sku === null || index.has(c.gold.sku), `unknown sku ${c.gold.sku}`);
@@ -61,7 +62,7 @@ test('labels piped answers into well-formed JSONL, re-asks invalid answers, and 
   assert.equal(first.status, 0, first.stdout + first.stderr);
   assert.match(first.stdout, /PRLG-5/);
   assert.match(first.stdout, /parsed: qty 2 · unit carton/);
-  assert.match(first.stdout, /Stopped\. 3 lines labelled/);
+  assert.match(first.stdout, /Stopped\. 3 items labelled, 0 skipped, 1 to go/);
   const cases = readJsonl<Case>(out);
   for (const c of cases) wellFormed(c);
   assert.deepEqual(cases, [
@@ -74,7 +75,7 @@ test('labels piped answers into well-formed JSONL, re-asks invalid answers, and 
   const second = label(args, ['4', '', '', 'n', '']);
   assert.equal(second.status, 0, second.stdout + second.stderr);
   assert.doesNotMatch(second.stdout, /parle g 5\/- 2 petti/, 'labelled lines are skipped, not asked again');
-  assert.match(second.stdout, /Done\. 4 of 4 lines labelled/);
+  assert.match(second.stdout, /Done\. 4 items labelled, 0 skipped \(4 items\)/);
   const all = readJsonl<Case>(out);
   for (const c of all) wellFormed(c);
   assert.deepEqual(all.slice(0, 3), cases);
@@ -185,4 +186,93 @@ test('a missing or unreadable --in file stops with one plain line and writes not
   assert.equal(r.status, 1, r.stdout + r.stderr);
   assert.equal(r.stderr.trim(), `Can't read ${dir}: it's a folder, not a file.`);
   assert.equal(existsSync(out), false);
+});
+
+// A14: the labeller cuts each input line into items with the app's own splitOrder(), so the human test set is
+// labelled on exactly the pieces the app matches. Non-items (greetings, thanks) can be skipped.
+test('a comma line becomes separate items h001-1/-2, numbering is stripped like the app, and s skips a greeting', (t) => {
+  const dir = scratch(t);
+  const raw = join(dir, 'raw.txt');
+  const out = join(dir, 'human.jsonl');
+  writeFileSync(raw, 'parle g 2 petti, maggi 1 ctn\n1) tata namak 1kg 5 ctn\nHi bhaiya\n');
+  const args = ['--catalog', catalogPath, '--in', raw, '--out', out];
+  const r = label(args, [
+    'PRLG-5', '', '', 'n', 'ambiguous_variant', // h001-1: no price written, so a careful person would ask
+    'MAGGI-14', '', '', 'y', '', // h001-2
+    'TATASALT-1', '', '', 'y', '', // h002: "1) " stripped
+    's', // h003: a greeting, not an order item
+  ]);
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.match(r.stdout, /h001-1 {2}parle g 2 petti\n {2}line 1, item 1 of 2: parle g 2 petti, maggi 1 ctn/);
+  assert.match(r.stdout, /h001-2 {2}maggi 1 ctn\n {2}line 1, item 2 of 2: parle g 2 petti, maggi 1 ctn/);
+  assert.match(r.stdout, /Product \[number, a SKU, n = needs review \/ not stocked, s = skip: not an order item\]: /);
+  assert.match(r.stdout, /Done\. 3 items labelled, 1 skipped \(4 items\)/);
+  const cases = readJsonl<Case>(out);
+  for (const c of cases) wellFormed(c);
+  assert.deepEqual(cases.map((c) => [c.id, c.text, c.gold.sku, c.gold.qty, c.gold.unit, c.gold.status]), [
+    ['h001-1', 'parle g 2 petti', 'PRLG-5', 2, 'carton', 'needs_review'],
+    ['h001-2', 'maggi 1 ctn', 'MAGGI-14', 1, 'carton', 'ok'],
+    ['h002', 'tata namak 1kg 5 ctn', 'TATASALT-1', 5, 'carton', 'ok'],
+  ]);
+  assert.equal(readFileSync(`${out}.skipped`, 'utf8'), 'h003\tHi bhaiya\n');
+  assert.ok(!readFileSync(out, 'utf8').includes('Hi bhaiya'), 'skipped items never enter the labelled JSONL');
+
+  const again = label(args, []);
+  assert.equal(again.status, 0, again.stdout + again.stderr);
+  assert.doesNotMatch(again.stdout, /Product \[/, 'labelled and skipped items are not asked again');
+  assert.match(again.stdout, /Done\. 3 items labelled, 1 skipped \(4 items\)/);
+  assert.equal(readFileSync(`${out}.skipped`, 'utf8'), 'h003\tHi bhaiya\n');
+});
+
+test('the summary counts labelled and skipped items when stopping part-way', (t) => {
+  const dir = scratch(t);
+  const raw = join(dir, 'raw.txt');
+  const out = join(dir, 'human.jsonl');
+  writeFileSync(raw, 'namaste\nparle g 5/- 2 petti; maggi 1 ctn\nthank you\n');
+  const r = label(['--catalog', catalogPath, '--in', raw, '--out', out], ['s', 'PRLG-5', '', '', 'y', '']);
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.match(r.stdout, /4 items from 3 lines: 0 labelled, 0 skipped, 4 to go\./);
+  assert.match(r.stdout, /Stopped\. 1 item labelled, 1 skipped, 2 to go/);
+});
+
+test('a changed input is caught per item, for labelled and for skipped items', (t) => {
+  const dir = scratch(t);
+  const raw = join(dir, 'raw.txt');
+  const out = join(dir, 'human.jsonl');
+  writeFileSync(raw, 'parle g 2 petti, maggi 1 ctn\nHi bhaiya\n');
+  writeFileSync(out, '{"id":"h001-2","text":"maggi 9 ctn","gold":{"sku":null,"qty":null,"unit":null,"status":"needs_review"},"tags":[]}\n');
+  let r = label(['--catalog', catalogPath, '--in', raw, '--out', out], ['n', '', '', '']);
+  assert.equal(r.status, 1, r.stdout + r.stderr);
+  assert.match(r.stderr, /h001-2 in .* is "maggi 9 ctn", but it doesn't match line 1, item 2 of 2 in .*raw\.txt \("maggi 1 ctn"\)/);
+  writeFileSync(out, '');
+  writeFileSync(`${out}.skipped`, 'h002\tHello bhaiya\n');
+  r = label(['--catalog', catalogPath, '--in', raw, '--out', out], ['n', '', '', '']);
+  assert.equal(r.status, 1, r.stdout + r.stderr);
+  assert.match(r.stderr, /h002 in .*\.skipped is "Hello bhaiya", but it doesn't match line 2 in .*raw\.txt \("Hi bhaiya"\)/);
+});
+
+test('the items the labeller shows are exactly splitOrder() of the same text', (t) => {
+  const dir = scratch(t);
+  const raw = join(dir, 'raw.txt');
+  const out = join(dir, 'human.jsonl');
+  const sample = [
+    'Namaste bhaiya',
+    'parle g 5/- 2 petti, maggi 1 ctn; lux 10 rs 2 dozen',
+    '- surf 1 kg 6 pkt',
+    '2) aashirvaad atta 10 kg 1,500 bag',
+    '* kitkat 20 rs 4 pcs,,',
+    '',
+    'maggi, 4 pack 1 ctn',
+    '   ',
+    'tata namak 1 kg 5 ctn',
+  ].join('\n');
+  writeFileSync(raw, sample);
+  const expected = splitOrder(sample);
+  // Skipping every item writes each one, in order, to the .skipped file: that is what was shown.
+  const r = label(['--catalog', catalogPath, '--in', raw, '--out', out], expected.map(() => 's'));
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  const shownItems = readFileSync(`${out}.skipped`, 'utf8').trim().split('\n').map((l) => l.split('\t').slice(1).join('\t'));
+  assert.deepEqual(shownItems, expected);
+  assert.ok(expected.includes('aashirvaad atta 10 kg 1,500 bag'), 'a digit comma stays inside its item');
+  assert.match(r.stdout, new RegExp(`Done\\. 0 items labelled, ${expected.length} skipped \\(${expected.length} items\\)`));
 });

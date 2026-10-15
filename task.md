@@ -204,6 +204,28 @@ The working task list for ParchiMatch Lite. Read [context.md](context.md) first.
 - `npm test` passes, and the locked hash is unchanged.
 - Claude confirms the first real run is green on GitHub after the owner pushes.
 
+### A14. Labeller splits order lines exactly like the app, and can skip non-items: `review` (bug fix, allowed under the freeze)
+**Why (found by the agent, 15 Oct):** the app splits pasted text with `splitOrder()` (`src/orderlines.ts`): new lines, commas not between digits, `;`, and it strips `1)` and `-` bullets. `npm run label` splits only on new lines, so `parle g 2 petti, maggi 1 ctn` would get one gold label for two items. Friends' WhatsApp messages also contain greetings ("Hi bhaiya", "thanks"), which must not enter the test set as order items.
+**Decision (Claude):** the labeller uses the app's splitter; the owner pastes messages unedited. Splitting by hand was rejected, because it would quietly correct the splitter's mistakes and flatter the score.
+**Do (test-first):**
+1. **`src/label.ts`:** for each non-blank input line, `items = splitOrder(line)`.
+   - **Ids:** `h007` when the line has one item; `h007-1`, `h007-2`, … when it has several. Ids stay stable, because they come from line numbers plus position.
+   - **Context:** show the full original line plus `item 2 of 3`, so the labeller sees the context.
+   - **Resume:** the changed-input check works per item. If an item's text differs from what was saved for that id, stop as today.
+2. **New answer `s` at the product prompt:** skip, "not an order item (greeting, thanks, note)". Skipped ids are appended to `<out>.skipped` (one `id<TAB>text` per line), so a rerun doesn't ask again. They never go into the labelled JSONL. The final summary prints how many items were labelled and how many skipped.
+3. **Fragments the splitter cut wrongly** (e.g. C02, `maggi, 4 pack 1 ctn`): the labeller answers `n`, so the gold is needs_review, and tags it `bad_split`. Document this, plus the skip option, in `docs/EVALUATION.md` and the README label paragraph.
+4. No changes to `splitOrder()` itself, the app, or the evaluation code.
+
+**Done when:**
+- Piped-stdin tests cover:
+  - a comma line giving two items with ids `-1`/`-2`;
+  - a numbered `1) …` line stripped the same way as the app;
+  - `s` writing to `.skipped` and not re-asked on resume;
+  - the summary counts;
+  - an input change detected per item.
+- A test asserts that the labeller's items for a sample text equal `splitOrder()` on the same text.
+- `npm test` passes, and the locked hash is unchanged.
+
 ### A6. Misspelled product names that contain a number: `not doing` (decided 13 Oct, C6)
 **Decision (Claude):** no fix for this entry. The only catalogue name with a number is 5 Star (plus the "maggi 4 pack" alias). All six practice lines with it (d003, d123, d142, d172, d179, d214) spell it correctly ("5 star", "five star"), so the practice set has no evidence to build or check a fix against. The only example (`5 sttar 20 wala 5box`) is in the locked test set, which we never tune on. The line is safe: it's asked about, not wrongly accepted. It stays a known limitation.
 
@@ -247,7 +269,7 @@ Anything else goes in the report as a question. Delete the temporary folder at t
 | ID | Task | Status |
 |---|---|---|
 | U1 | Click through `docs/MANUAL_TEST_CHECKLIST.md` in a browser with other apps closed | todo |
-| U2 | Ask 3–5 friends/relatives to type orders for 15 catalogue items, the way they'd really WhatsApp them (feeds A4/C8) | todo |
+| U2 | Ask 3–5 friends/relatives to type orders for 15 catalogue items, the way they'd really WhatsApp them (feeds A4/C8) | **doing (15 Oct)**: no shopkeeper available, so the owner chose the friends option. The 15 items are fixed in EVALUATION.md. Raw replies go to `data/human/raw.txt` (gitignored), then the owner labels with `npm run label`, then Claude locks and scores once (C8). |
 | U3 | Record a 60–90 s demo with Wi-Fi off (sample order 03), save as `site/assets/demo.mp4` | todo |
 | U4 | Commit and push in reviewed batches (no AI co-author lines); enable GitHub Pages (Settings → Pages → Source: GitHub Actions) | Pages **done 15 Oct**: https://bipul724.github.io/parchimatch/ is live. Claude checked all 7 pages (200), the live numbers (205 tests, 1.5/2.6 s), internal links (only `assets/demo.mp4` is missing, waiting on U3; the poster is labelled "coming soon") and phone width (no horizontal scroll). Next: the .tech domain. |
 | U5 | Rewrite the DEV post in your own voice, add screenshots/video, publish with `#devchallenge #hf26challenge`, and disclose AI help in the post | todo |
