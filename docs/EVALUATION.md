@@ -160,6 +160,27 @@ The writers are friends of the author, not shopkeepers. Results from this set ar
 - **Round 2 used.** The ask was cut to **6 items**, with an explicit "please type it yourself, no ChatGPT": Parle-G ₹5 pack, Tata Salt 1 kg, Fortune Soyabean Oil 1 L pouch, Amul Butter 100 g, Dairy Milk ₹20 bar, Lifebuoy ₹10 bar. **3 hand-typed replies** went into `data/human/raw.txt`.
 - **Observed before any matching.** The app's splitter turns the 3 replies into 11 pieces, and 3 of them hold several products. Two are joined by "aur", and one reply has no separators at all. The splitter was **not** changed before scoring, because that would be tuning on the test. Labellers mark those pieces `n` with the tag `bad_split`.
 
+### Result: human-written set (C8, 15 Oct 2026, scored once)
+
+The owner labelled the 11 pieces with `npm run label`: 5 `ok`, 6 `needs_review`. The set was locked as `data/human/test.jsonl` (sha256 `ef0e3e57…`, gitignored) and scored **once**, with no changes to the app before or after.
+
+| Method | Wrong rows auto-accepted | Missed flags | Auto-accept acc | Zero typing | Review load | Model calls | Model p50 / p95 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| exact | 0 | 1 | 40% (2/5) | 40% | 72.7% | 0 | – |
+| fuzzy | 0 | 1 | 60% (3/5) | 60% | 63.6% | 0 | – |
+| llm-cand | 0 | 1 | 60% (3/5) | 80% | 63.6% | 11 | 3.0 s / 38.6 s (first call loads the model) |
+| **hybrid** | **0** | **1** | **60% (3/5)** | **80%** | **63.6%** | **5** | **1.4 s / 1.7 s** |
+
+**Reading it honestly:**
+- **No wrong row was auto-accepted by any method.**
+- **The one missed flag is the same line for every method:** `fortune oil 1 ltr ke 1 carton`. The app accepted exactly what the labeller wrote (FORTOIL-1L, 1 carton), but the labeller had marked the line as needing a question (`ambiguous_variant`). By the strict definition (a line a careful person would ask about), it counts as dangerous, so dangerous = 1/11. The label was not changed after scoring.
+- **Multi-product pieces:** all 3 `bad_split` pieces were sent to review (*"Which price?"*, *"Which pack size?"*). The suggestion names only one product, though, so an operator in a hurry could miss the second item, e.g. Lifebuoy in "dairy milk 20 wali 1 box aur lifebuoy 10 wale 1 peti". Synthetic data never showed this risk.
+- **Gaps the human text exposed:**
+  - splitting on "aur"/"or" and on run-on messages with no separators;
+  - "pouch" not recognised as a unit word;
+  - "tata namak kilo" fitting Tata Tea 1 kg about as well as Tata Salt 1 kg, so the app asks.
+- **Scale:** 11 pieces from 3 friends (not shopkeepers), on 6 catalogue items. Indicative only. Any fix for these gaps must be built and checked on practice data, then confirmed on a **new** human round, never on this set.
+
 To label: paste the messages exactly as sent, unedited, into a plain text file (e.g. `data/human/raw.txt`), with a blank line between people if you like, then run
 
 ```bash

@@ -17,7 +17,7 @@ Everything an agent or collaborator needs to work on ParchiMatch Lite without re
 | Default model | `gemma4:e2b-it-qat` (since the 13 Oct bake-off). Pulled locally: gemma4:e2b-it-qat, gemma4:e4b-it-qat, gemma3:4b, qwen3.5:2b-q4_K_M, qwen3.5:4b-q4_K_M. |
 | Site | `site/` (static, 7 pages) + `.github/workflows/pages.yml`. GitHub Pages is **not enabled yet** (owner task U4). Canonical URLs point to `https://bipul724.github.io/parchimatch/`. |
 | DEV post | **Not drafted yet** (C7). Nothing published. |
-| Human-written test set | Not collected yet (U2 → A4 → C8). |
+| Human-written test set | **Done 15 Oct**: 11 pieces from 3 friends (round 1 excluded as AI-written), locked `ef0e3e57…`, scored once. Hybrid: 0 wrong rows, 3/5 auto, 80% zero typing, 1 strict missed flag. See EVALUATION.md. |
 
 **Immediate next steps:**
 1. The owner commits the reviewed A7/A8/A3/A5/A4 batch.

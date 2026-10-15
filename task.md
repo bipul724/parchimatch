@@ -263,7 +263,7 @@ Anything else goes in the report as a question. Delete the temporary folder at t
 | C5 | Final locked-test run and numbers everywhere | done (13 Oct, commit 8f9a824): every outcome identical to C2 (hybrid 88.2% / 0 dangerous / 92.2% zero typing); latency 1.5/2.6 s from a speed-only re-run with nothing else running (rows identical; the C5 timings were inflated by the A10 checks running at the same time); test count 191 on the site |
 | C6 | Decide A6 using dev-set evidence only | done: not doing (no practice evidence; limitation stays) |
 | C7 | Draft the DEV post as an unpublished draft (only on your yes) | todo |
-| C8 | Score and lock the human-written test set when it arrives (after A4) | todo |
+| C8 | Score and lock the human-written test set when it arrives (after A4) | done 15 Oct: 11 pieces from 3 friends (round 2) locked (`ef0e3e57…`) and scored once. Hybrid: 0 wrong rows, 3/5 auto, 80% zero typing, 1 strict missed flag. Gaps: aur/run-on split, "pouch", Tata Salt vs Tea. Write-up in EVALUATION.md. |
 | C9 | After A1: update the safety-rule count (15 → 16) and the comma limitation in `context.md` and `site/` (index, how-it-works, FAQ, CLAIMS); add a note on C01 in `docs/TEST_REPORT.md` | done: context, 5 site pages, CLAIMS, TEST_REPORT and SERVER_FINDINGS updated; S16 row added to the how-it-works rules table |
 
 ## Owner tasks (you)
@@ -271,10 +271,11 @@ Anything else goes in the report as a question. Delete the temporary folder at t
 | ID | Task | Status |
 |---|---|---|
 | U1 | Click through `docs/MANUAL_TEST_CHECKLIST.md` in a browser with other apps closed | todo |
-| U2 | Ask 3–5 friends/relatives to type orders for 15 catalogue items, the way they'd really WhatsApp them (feeds A4/C8) | **Round 1 excluded (AI-written); round 2: 3 hand-typed replies (6 items) in raw.txt, 11 pieces, 3 multi-product. Owner labels next; then Claude locks and scores (C8).** Earlier note: **doing (15 Oct)**: no shopkeeper available, so the owner chose the friends option. The 15 items are fixed in EVALUATION.md. Raw replies go to `data/human/raw.txt` (gitignored), then the owner labels with `npm run label`, then Claude locks and scores once (C8). |
+| U2 | Ask 3–5 friends/relatives to type orders for 15 catalogue items, the way they'd really WhatsApp them (feeds A4/C8) | **Done 15 Oct.** Round 1 excluded (AI-written); round 2: 3 hand-typed replies (6 items), 11 pieces, labelled by the owner and scored once (C8). Earlier note: **doing (15 Oct)**: no shopkeeper available, so the owner chose the friends option. The 15 items are fixed in EVALUATION.md. Raw replies go to `data/human/raw.txt` (gitignored), then the owner labels with `npm run label`, then Claude locks and scores once (C8). |
 | U3 | Record a 60–90 s demo with Wi-Fi off (sample order 03), save as `site/assets/demo.mp4` | todo |
 | U4 | Commit and push in reviewed batches (no AI co-author lines); enable GitHub Pages (Settings → Pages → Source: GitHub Actions) | Pages **done 15 Oct**: https://bipul724.github.io/parchimatch/ is live. Claude checked all 7 pages (200), the live numbers (205 tests, 1.5/2.6 s), internal links (only `assets/demo.mp4` is missing, waiting on U3; the poster is labelled "coming soon") and phone width (no horizontal scroll). Next: the .tech domain. |
 | U5 | Rewrite the DEV post in your own voice, add screenshots/video, publish with `#devchallenge #hf26challenge`, and disclose AI help in the post | todo |
+| U6 | **Entire (after labelling)**: `brew install --cask entireio/tap/entire` → `entire enable -y --agent claude-code` → Claude turns on email redaction (`redaction.pii.enabled`) and runs `entire import claude-code --dry-run` → import **only the coding agent's A1–A14 sessions**, each checked by Claude first (`--session ID`). Never this review session: it holds emails, a Sentry key screenshot and another company's text. → `entire login` (GitHub App on this repo only) → push → links go in the post. Answer `n` to any commit-link prompt, so commit messages get no Entire trailers. Category had 0 rivals on 15 Oct (405 posts scanned). | todo |
 
 ## Not doing (decided)
 

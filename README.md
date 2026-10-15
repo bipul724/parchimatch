@@ -44,6 +44,8 @@ Someone retypes every line into Tally, Busy or Marg. ParchiMatch Lite reads each
 
 \*Automatic, or one tap to confirm a correct pre-filled suggestion. Model `gemma4:e2b-it-qat`, MacBook Air M2, 8 GB, current code (after the [external test pass](docs/TEST_REPORT.md)). The data is **synthetic**; read the [data card](data/synthetic/DATA_CARD.md) and [EVALUATION.md](docs/EVALUATION.md) before quoting these.
 
+**A small human-written check (15 Oct):** 11 order pieces hand-typed by 3 friends (not shopkeepers), labelled and scored once. Hybrid auto-accepted **0 wrong rows**, handled 80% with no typing, and exposed three gaps synthetic data never showed: items joined by "aur" (or with no separator at all), the unit word "pouch", and Tata Salt vs Tata Tea. [Details](docs/EVALUATION.md#result-human-written-set-c8-15-oct-2026-scored-once).
+
 ## Quick start
 
 **Requirements:** Node.js 24+, and for the model: [Ollama](https://ollama.com) plus about 6 GB of disk (the model is a 4.3 GB download). Without Ollama, the app runs fuzzy matching only.
