@@ -184,6 +184,25 @@ The working task list for ParchiMatch Lite. Read [context.md](context.md) first.
 - `npm test` passes, and the locked hash is unchanged.
 - **The agent must not run any model evaluation and must not touch `data/synthetic/test.jsonl`.** Claude does the real traced run on the practice set with the owner's Sentry key.
 
+### A13. CI with GitHub Actions (for "Best Use of GitHub Copilot", Actions route): `todo`
+**Why:** that category accepts "automate your project with GitHub Actions". Today Actions only deploys the site, and the 205 tests run only on the owner's Mac. Approved by the owner on 15 Oct; it adds no app code.
+**Do:**
+1. **New `.github/workflows/ci.yml`:** runs on `push` and `pull_request` to `main`, plus `workflow_dispatch`. One job on `ubuntu-latest` with `permissions: contents: read`:
+   - checkout;
+   - `actions/setup-node` with Node **24**. Use the same major version family style as `pages.yml`, and only versions you've confirmed exist;
+   - `npm test`. No `npm install` is needed, since there are zero dependencies. **Ollama isn't available in CI**, so every test must pass without it, and none may call a real model;
+   - **Locked test guard:** a step that recomputes the sha256 of `data/synthetic/test.jsonl` and fails unless it equals the `sha256` in `data/synthetic/test.jsonl.lock.json`, printing both hashes;
+   - **Baselines:** `npm run eval:baselines -- --out ci-results` (exact and fuzzy on the fixture, no model), then upload `ci-results/` as a build artifact (`actions/upload-artifact`) and append the summary table to `$GITHUB_STEP_SUMMARY`.
+   - The job must **never** read secrets and never set `SENTRY_DSN`.
+2. **README:** add a CI status badge at the top, linking to the workflow runs. Add a short "Continuous integration" note: what runs on every push, and that a change to the locked test set fails the build.
+3. **`docs/DEPLOY.md` or `CONTRIBUTING.md`:** one line saying pull requests must pass CI.
+
+**Done when:**
+- `ci.yml` is valid YAML.
+- Every command it runs passes locally, the same way CI runs it: run `npm test` with Ollama unreachable, and make the hash check fail on a temporary copy with one changed byte (never touch the real file).
+- `npm test` passes, and the locked hash is unchanged.
+- Claude confirms the first real run is green on GitHub after the owner pushes.
+
 ### A6. Misspelled product names that contain a number: `not doing` (decided 13 Oct, C6)
 **Decision (Claude):** no fix for this entry. The only catalogue name with a number is 5 Star (plus the "maggi 4 pack" alias). All six practice lines with it (d003, d123, d142, d172, d179, d214) spell it correctly ("5 star", "five star"), so the practice set has no evidence to build or check a fix against. The only example (`5 sttar 20 wala 5box`) is in the locked test set, which we never tune on. The line is safe: it's asked about, not wrongly accepted. It stays a known limitation.
 
