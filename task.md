@@ -184,7 +184,8 @@ The working task list for ParchiMatch Lite. Read [context.md](context.md) first.
 - `npm test` passes, and the locked hash is unchanged.
 - **The agent must not run any model evaluation and must not touch `data/synthetic/test.jsonl`.** Claude does the real traced run on the practice set with the owner's Sentry key.
 
-### A13. CI with GitHub Actions (for "Best Use of GitHub Copilot", Actions route): `todo`
+### A13. CI with GitHub Actions (for "Best Use of GitHub Copilot", Actions route): `done` (pending the first green run on GitHub)
+**Review (Claude, 15 Oct):** accepted. `ci.yml` checked: least-privilege `contents: read`, no secrets, a 15-min timeout, and all three action tags exist (checkout v6, setup-node v7, upload-artifact v7). The agent reproduced each step locally: 206/206 without `node_modules`; the hash guard passes on the real file and fails on a one-byte change; baselines run with 0 Ollama requests. Decisions: `ci-results/` added to `.gitignore` (Claude); keep the major-version tags like `pages.yml`; the first real run confirms Ubuntu and latest Node 24.
 **Why:** that category accepts "automate your project with GitHub Actions". Today Actions only deploys the site, and the 205 tests run only on the owner's Mac. Approved by the owner on 15 Oct; it adds no app code.
 **Do:**
 1. **New `.github/workflows/ci.yml`:** runs on `push` and `pull_request` to `main`, plus `workflow_dispatch`. One job on `ubuntu-latest` with `permissions: contents: read`:

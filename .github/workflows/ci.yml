@@ -1,0 +1,68 @@
+name: CI
+
+# Tests, the locked-test-set guard and the no-model baselines on every push and pull request.
+# No secrets and no model: Ollama isn't available here, and SENTRY_DSN is never set, so eval tracing stays off.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js 24
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          # Zero dependencies and no lockfile: nothing to cache or install.
+          package-manager-cache: false
+
+      - name: Run tests (no Ollama, no network model)
+        run: npm test
+
+      - name: Locked test set unchanged
+        env:
+          LOCKED: data/synthetic/test.jsonl
+        run: |
+          node -e '
+            const { readFileSync } = require("node:fs");
+            const { createHash } = require("node:crypto");
+            const file = process.env.LOCKED;
+            const actual = createHash("sha256").update(readFileSync(file)).digest("hex");
+            const expected = JSON.parse(readFileSync(`${file}.lock.json`, "utf8")).sha256;
+            console.log(`expected (${file}.lock.json): ${expected}`);
+            console.log(`actual   (${file}):           ${actual}`);
+            if (actual !== expected) {
+              console.log(`::error file=${file}::The locked test set changed after it was locked. Results on it are no longer comparable; restore it.`);
+              process.exit(1);
+            }
+          '
+
+      - name: Baselines (exact and fuzzy on the fixture, no model)
+        run: npm run eval:baselines -- --out ci-results
+
+      - name: Add baselines to the job summary
+        run: |
+          {
+            echo "### Baselines: exact and fuzzy on data/fixture (no model)"
+            echo
+            cat ci-results/summary.md
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload baseline results
+        uses: actions/upload-artifact@v7
+        with:
+          name: baselines
+          path: ci-results/
+          if-no-files-found: error

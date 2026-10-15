@@ -1,5 +1,7 @@
 # ParchiMatch Lite
 
+[![CI](https://github.com/bipul724/parchimatch/actions/workflows/ci.yml/badge.svg)](https://github.com/bipul724/parchimatch/actions/workflows/ci.yml)
+
 **Messy wholesale orders → clean billing rows, on the shop's own computer.**
 
 A small FMCG wholesaler gets orders like these on WhatsApp:
@@ -96,6 +98,14 @@ npm run label -- --catalog data/synthetic/catalog.csv --in data/human/raw.txt --
 ```
 
 For each line it shows the parsed quantity and unit and eight candidate products, sorted by name and without scores, then asks for the product (a number from the list or any SKU), quantity, unit, whether a careful person could enter it without asking (y or n, no default), and tags. It saves after every line and continues where it stopped. It refuses to write into `data/synthetic/` or a locked file.
+
+## Continuous integration
+
+Every push and pull request to `main` runs [`.github/workflows/ci.yml`](.github/workflows/ci.yml) on GitHub Actions (Node 24, Ubuntu, no Ollama, no secrets):
+
+1. `npm test`. Nothing is installed first, and no test needs a model.
+2. A guard that recomputes the sha256 of the locked test set (`data/synthetic/test.jsonl`) and compares it with its lock file. **Changing the locked test set fails the build.**
+3. `npm run eval:baselines` (exact and fuzzy on the fixture, no model). The summary table appears on the run page, and the result files are kept as a build artifact.
 
 ## Documentation
 

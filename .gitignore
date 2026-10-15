@@ -7,6 +7,7 @@ data/train/
 data/app/
 # Evaluation outputs (every row of every run)
 results/
+ci-results/
 
 # --- Dependencies and build output (none today, kept for safety) --------
 node_modules/

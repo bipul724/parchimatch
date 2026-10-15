@@ -61,4 +61,6 @@ Only report numbers from the locked test set (`data/synthetic/test.jsonl`, or a 
 
 ## Pull requests
 
+Pull requests must pass CI ([`.github/workflows/ci.yml`](.github/workflows/ci.yml): tests, the locked-test-set guard and the no-model baselines) before they're merged.
+
 Include: what changed and why; test output; evaluation numbers before and after (dangerous rows first); and any doc updates.
