@@ -229,7 +229,7 @@ Anything else goes in the report as a question. Delete the temporary folder at t
 | U1 | Click through `docs/MANUAL_TEST_CHECKLIST.md` in a browser with other apps closed | todo |
 | U2 | Ask 3–5 friends/relatives to type orders for 15 catalogue items, the way they'd really WhatsApp them (feeds A4/C8) | todo |
 | U3 | Record a 60–90 s demo with Wi-Fi off (sample order 03), save as `site/assets/demo.mp4` | todo |
-| U4 | Commit and push in reviewed batches (no AI co-author lines); enable GitHub Pages (Settings → Pages → Source: GitHub Actions) | todo |
+| U4 | Commit and push in reviewed batches (no AI co-author lines); enable GitHub Pages (Settings → Pages → Source: GitHub Actions) | Pages **done 15 Oct**: https://bipul724.github.io/parchimatch/ is live. Claude checked all 7 pages (200), the live numbers (205 tests, 1.5/2.6 s), internal links (only `assets/demo.mp4` is missing, waiting on U3; the poster is labelled "coming soon") and phone width (no horizontal scroll). Next: the .tech domain. |
 | U5 | Rewrite the DEV post in your own voice, add screenshots/video, publish with `#devchallenge #hf26challenge`, and disclose AI help in the post | todo |
 
 ## Not doing (decided)
