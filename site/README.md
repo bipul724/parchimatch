@@ -13,11 +13,11 @@ Then open `http://127.0.0.1:8000/`. Hosting needs only these static files; Pytho
 - [GitHub Pages and custom-domain steps](DEPLOYMENT.md)
 - [Local assets and the real-video slot](assets/README.md)
 
-Before publication, replace `https://YOUR-DOMAIN.example/` in canonical/social metadata, robots and sitemap with the actual base URL. For GitHub Pages, the expected base is `https://bipul724.github.io/parchimatch/`. Keep internal and asset paths relative. No `CNAME` file has been created.
+Canonical/social metadata, robots and sitemap use the GitHub Pages base `https://bipul724.github.io/parchimatch/`. Internal and asset paths are relative. No `CNAME` file has been created; a custom domain would mean replacing that base URL (see [DEPLOYMENT.md](DEPLOYMENT.md)).
 
 Outstanding publishing questions:
 
-1. Should the final canonical base be the expected GitHub Pages URL or a planned custom domain?
+1. The canonical base is the GitHub Pages URL. If a custom domain is set up later, switch the base URL as described in DEPLOYMENT.md.
 2. Will the real demo recording contain speech that needs a local caption track? The current poster has no audio and is explicitly a placeholder.
 
 The underlying tool, tests, data and existing docs are unchanged by this website work.

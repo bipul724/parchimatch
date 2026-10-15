@@ -14,7 +14,7 @@ The local ParchiMatch app stays on the shop computer. This workflow publishes on
 
 The workflow uses the official `configure-pages`, `upload-pages-artifact` and `deploy-pages` actions, with `contents: read`, `pages: write` and `id-token: write`, and the `github-pages` environment. See [GitHub’s custom workflow documentation](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages).
 
-Before publishing, replace the clearly marked `https://YOUR-DOMAIN.example/` base URL placeholders in HTML canonical/social tags, `robots.txt` and `sitemap.xml`. For the default deployment, use `https://bipul724.github.io/parchimatch/` and retain each page or asset suffix. Paths to site assets and navigation are relative.
+The canonical and social tags, `robots.txt` and `sitemap.xml` already use the GitHub Pages base `https://bipul724.github.io/parchimatch/`, with each page or asset suffix. Paths to site assets and navigation are relative, so nothing else needs changing for the default deployment.
 
 ## A custom domain later
 
@@ -30,7 +30,7 @@ Use a domain you control, such as `example.tech`. No current free-domain offer i
    185.199.111.153
    ```
 
-3. Replace the metadata base URL placeholders with your HTTPS domain. Once DNS validation and the certificate are ready, enable **Enforce HTTPS** in **Settings → Pages**.
+3. Replace the base URL `https://bipul724.github.io/parchimatch/` in the canonical/social tags, `robots.txt` and `sitemap.xml` with your HTTPS domain. Once DNS validation and the certificate are ready, enable **Enforce HTTPS** in **Settings → Pages**.
 
 `site/CNAME` has deliberately not been created. For branch publishing, that conventional file would contain only the chosen domain, such as `example.tech`, on one line. With this custom GitHub Actions workflow, GitHub ignores `CNAME` files and does not require one: **Settings → Pages → Custom domain is authoritative**. Adding a file alone does not configure a domain. See [GitHub’s domain guide](https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site/managing-a-custom-domain-for-your-github-pages-site), [CNAME guidance](https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site/troubleshooting-custom-domains-and-github-pages) and [HTTPS guide](https://docs.github.com/en/pages/getting-started-with-github-pages/securing-your-github-pages-site-with-https).
 

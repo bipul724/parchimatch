@@ -246,3 +246,13 @@
 .docs-layout{display:block}
 .section{padding-block:24px}
 .demo-ledger{box-shadow:none}a{color:inherit}}
+/* Readability pass (15 Oct): raise the smallest text to at least 12px; sizes only, same fonts and colours. Placed last so it also overrides the mobile rules above. */
+.brand small,.eyebrow,.section-number,.section-head .eyebrow,.ledger-head p,.ledger-mark,.ledger-column-head,.line-number,.status,.replay-button,.diagram-label,.diagram-node small,.page-contents>summary,.data-table caption,.data-table thead th,.data-table td:before,.code-block:before,.copy-button,.footer-meta{font-size:12px}
+.hero-footnote,.ledger-foot p,.order-line,.row-result,.proof-strip p,.step:before,.rule-preview p,.diagram-node,.diagram-caption,.learning-comparison p,.video-caption,.source-note,.site-footer{font-size:13px}
+.main-nav a,.nav-menu>summary,.page-contents a,.text-link,.button{font-size:14px}
+@media(min-width:901px){.table-wrap{overflow-x:auto}}
+.shot{margin-top:24px}
+.shot img{display:block;width:100%;height:auto;border:var(--border);border-radius:11px}
+.shot figcaption{margin-top:10px;font-size:13px;color:var(--muted)}
+code{font-size:max(12px,.86em)}
+.ledger-mark{white-space:nowrap}
