@@ -208,6 +208,19 @@ test('tracing is refused for cases or a catalogue outside data/synthetic/ and da
   assert.doesNotMatch(r.stderr, /is outside/, 'a path that resolves inside data/fixture/ is allowed');
 });
 
+test('makeTracer: an eval root span starts a fresh trace, so the pre-run model check is not the trace root', async () => {
+  const calls: string[] = [];
+  const sentry = {
+    init: () => {},
+    startNewTrace: <T>(fn: () => T) => { calls.push('startNewTrace'); return fn(); },
+    startSpan: (options: { name: string }, fn: (span: unknown) => unknown) => { calls.push(`startSpan ${options.name}`); return fn({ setAttribute() {}, setAttributes() {}, setStatus() {} }); },
+    flush: async () => true,
+  };
+  const tracer = await makeTracer({ SENTRY_DSN: 'https://public@127.0.0.1:9/1' }, { importer: async () => sentry });
+  tracer.startSpan({ name: 'eval hybrid x', op: 'eval.run', newTrace: true }, () => tracer.startSpan({ name: 'invoke_agent parchimatch-hybrid' }, () => null));
+  assert.deepEqual(calls, ['startNewTrace', 'startSpan eval hybrid x', 'startSpan invoke_agent parchimatch-hybrid']);
+});
+
 test('tracing is refused for a locked test set, so a traced run never counts as another locked-test run', () => {
   const r = evalRun(['--catalog', 'data/synthetic/catalog.csv', '--cases', 'data/synthetic/test.jsonl']);
   assert.equal(r.status, 1, r.stdout + r.stderr);

@@ -16,6 +16,7 @@ export interface SpanOptions {
   name: string;
   op?: string;
   attributes?: Record<string, SpanValue | undefined>;
+  newTrace?: boolean; // start a fresh trace (an eval run), instead of joining whatever ran before it
 }
 
 export interface Tracer {
@@ -37,6 +38,7 @@ export class TracingUnavailable extends Error {}
 interface SentryModule {
   init(options: Record<string, unknown>): unknown;
   startSpan<T>(options: { name: string; op?: string; attributes?: Record<string, SpanValue> }, fn: (span: Span) => T): T;
+  startNewTrace?<T>(fn: () => T): T;
   flush(timeoutMs: number): Promise<boolean>;
 }
 
@@ -59,7 +61,9 @@ export async function makeTracer(env: Record<string, string | undefined>, option
   return {
     startSpan: (o, fn) => {
       const attributes = Object.fromEntries(Object.entries(o.attributes ?? {}).filter(([, v]) => v !== undefined)) as Record<string, SpanValue>;
-      return sentry.startSpan({ name: o.name, op: o.op, attributes }, fn);
+      const start = () => sentry.startSpan({ name: o.name, op: o.op, attributes }, fn);
+      // Without a fresh trace, the pre-run model check (an http.client span) became the root of every eval trace.
+      return o.newTrace && sentry.startNewTrace ? sentry.startNewTrace(start) : start();
     },
     flush: async () => {
       await sentry.flush(5000);

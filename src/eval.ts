@@ -143,6 +143,7 @@ export async function evaluateMethod(
     {
       name: `eval ${method} ${meta.label}`.trim(),
       op: 'eval.run',
+      newTrace: true,
       attributes: {
         'parchimatch.method': method,
         'gen_ai.request.model': usesModel ? meta.model : undefined,
