@@ -256,7 +256,7 @@ Anything else goes in the report as a question. Delete the temporary folder at t
 - **UI unit fallback:** when the order's unit isn't one the product is sold in (`Parle 20 20 5 Piece`, but Parle-G is sold by packet or carton), the amber row's unit box silently shows the first sold unit (packet). The operator sees it before confirming, so it's not a wrong auto-accept, but the row should say "piece isn't sold; choose packet or carton" with nothing preselected.
 - **Splitting:** items joined by "aur"/"or" or with no separator (human-written check). Build on practice data, then confirm on a new human round.
 - **Unit word "pouch".**
-- **"Remember" can learn an operator's mistake** (16 Oct, seen in the demo video: "lais peela" confirmed as Magic Masala, but yellow Lay's is Classic Salted). Ideas: for product-ambiguity rows, make the operator pick between the close candidates instead of confirming a preselected one; show a distinguishing hint (pack colour/flavour); add a way to see and remove learned names in the app.
+- **"Remember" can learn an operator's mistake** (16 Oct, happened in a first demo take, since re-recorded: "lais peela" confirmed as Magic Masala, but yellow Lay's is Classic Salted). Ideas: for product-ambiguity rows, make the operator pick between the close candidates instead of confirming a preselected one; show a distinguishing hint (pack colour/flavour); add a way to see and remove learned names in the app.
 
 ## Review and decision tasks (Claude)
 
@@ -278,7 +278,7 @@ Anything else goes in the report as a question. Delete the temporary folder at t
 |---|---|---|
 | U1 | Click through `docs/MANUAL_TEST_CHECKLIST.md` in a browser with other apps closed | todo |
 | U2 | Ask 3–5 friends/relatives to type orders for 15 catalogue items, the way they'd really WhatsApp them (feeds A4/C8) | **Done 15 Oct.** Round 1 excluded (AI-written); round 2: 3 hand-typed replies (6 items), 11 pieces, labelled by the owner and scored once (C8). Earlier note: **doing (15 Oct)**: no shopkeeper available, so the owner chose the friends option. The 15 items are fixed in EVALUATION.md. Raw replies go to `data/human/raw.txt` (gitignored), then the owner labels with `npm run label`, then Claude locks and scores once (C8). |
-| U3 | Record the demo (3 min, one take, Wi-Fi off) | done 16 Oct: on YouTube https://www.youtube.com/watch?v=2oqAtUKSwRc. The owner chose NOT to put the video file in the repo; the homepage poster links to YouTube (no embedded player). |
+| U3 | Record the demo (3 min, one take, Wi-Fi off) | done 16 Oct: on YouTube https://www.youtube.com/watch?v=lsl2cNpkY6U. The owner chose NOT to put the video file in the repo; the homepage poster links to YouTube (no embedded player). |
 | U4 | Commit and push in reviewed batches (no AI co-author lines); enable GitHub Pages (Settings → Pages → Source: GitHub Actions) | Pages **done 15 Oct**: https://bipul724.github.io/parchimatch/ is live. Claude checked all 7 pages (200), the live numbers (205 tests, 1.5/2.6 s), internal links (only `assets/demo.mp4` is missing, waiting on U3; the poster is labelled "coming soon") and phone width (no horizontal scroll). Next: the .tech domain. |
 | U5 | Rewrite the DEV post in your own voice, add screenshots/video, publish with `#devchallenge #hf26challenge`, and disclose AI help in the post | todo |
 | U6 | Entire | **not doing (15 Oct, owner's decision):** sharing sessions on Entire would publish the instructions typed into them, and the owner wants none of their instructions online. Nothing was installed. |
