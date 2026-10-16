@@ -12,7 +12,7 @@ Latest check: **15 October 2026** (fact-check and UI polish). It describes check
 - S1–S16 and L1–L5 on how-it-works match `docs/RULES.md`.
 - **The landing demo was re-run, not copied.** Its rows were checked with the app's own `matchLine()` (fuzzy only, synthetic catalogue, learned name `lais peela`). The former Devanagari row claimed "Ready", but that line is amber both without the model and, on the same pattern, with Gemma (practice-set results). It was replaced with `parle g 5/- 2 petti`, which is verified Ready in both paths.
 - Commands match the README Quick start and `docs/DEPLOY.md`: `npm run app -- --open`, `npm run app -- --catalog data/real/catalog.csv` and `lsof -nP -iTCP:5178 -sTCP:LISTEN`.
-- Honest labels kept: "synthetic", "no real shop has used it yet", and "Demo recording coming soon" with its poster.
+- Honest labels kept: "synthetic", "no real shop has used it yet", and the demo poster, which now links to the YouTube video (no third-party player is embedded).
 
 ## Browser checks (headless Chrome, DevTools protocol, temporary profile)
 
@@ -38,7 +38,7 @@ An offline link check covered all seven pages:
 - **147 internal references:** every one resolves to a file, and every fragment to an element id.
 - **37 links to repository files on GitHub:** each file exists in the repository, and each `#heading` anchor exists in its Markdown file.
 
-The checker was tested on a copy with a missing page, a missing id and a missing heading; it reported all three. The only intentionally absent resource is `assets/demo.mp4`, which the owner will record (see `assets/README.md`). It loads with `preload="none"`, so no request is made for it.
+The checker was tested on a copy with a missing page, a missing id and a missing heading; it reported all three. There are no intentionally absent resources: the demo video lives on YouTube and the homepage links to it from the poster (no video file, no embedded player).
 
 ## Network
 

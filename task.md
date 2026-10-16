@@ -252,6 +252,12 @@ Anything else goes in the report as a question. Delete the temporary folder at t
 
 ---
 
+### After the deadline (noted 15 Oct, not now)
+- **UI unit fallback:** when the order's unit isn't one the product is sold in (`Parle 20 20 5 Piece`, but Parle-G is sold by packet or carton), the amber row's unit box silently shows the first sold unit (packet). The operator sees it before confirming, so it's not a wrong auto-accept, but the row should say "piece isn't sold; choose packet or carton" with nothing preselected.
+- **Splitting:** items joined by "aur"/"or" or with no separator (human-written check). Build on practice data, then confirm on a new human round.
+- **Unit word "pouch".**
+- **"Remember" can learn an operator's mistake** (16 Oct, seen in the demo video: "lais peela" confirmed as Magic Masala, but yellow Lay's is Classic Salted). Ideas: for product-ambiguity rows, make the operator pick between the close candidates instead of confirming a preselected one; show a distinguishing hint (pack colour/flavour); add a way to see and remove learned names in the app.
+
 ## Review and decision tasks (Claude)
 
 | ID | Task | Status |
@@ -262,7 +268,7 @@ Anything else goes in the report as a question. Delete the temporary folder at t
 | C4 | Review each agent task: read the diff, run `npm test`, run dev-set exact/fuzzy/hybrid, check docs, then `done` or send back | ongoing: A1–A5, A7–A9 done |
 | C5 | Final locked-test run and numbers everywhere | done (13 Oct, commit 8f9a824): every outcome identical to C2 (hybrid 88.2% / 0 dangerous / 92.2% zero typing); latency 1.5/2.6 s from a speed-only re-run with nothing else running (rows identical; the C5 timings were inflated by the A10 checks running at the same time); test count 191 on the site |
 | C6 | Decide A6 using dev-set evidence only | done: not doing (no practice evidence; limitation stays) |
-| C7 | Draft the DEV post as an unpublished draft (only on your yes) | todo |
+| C7 | Draft the DEV post as an unpublished draft (only on your yes) | done 15 Oct: `post/DRAFT.md` (gitignored), v3 in the winners' structure, with fill-in markers for the owner |
 | C8 | Score and lock the human-written test set when it arrives (after A4) | done 15 Oct: 11 pieces from 3 friends (round 2) locked (`ef0e3e57…`) and scored once. Hybrid: 0 wrong rows, 3/5 auto, 80% zero typing, 1 strict missed flag. Gaps: aur/run-on split, "pouch", Tata Salt vs Tea. Write-up in EVALUATION.md. |
 | C9 | After A1: update the safety-rule count (15 → 16) and the comma limitation in `context.md` and `site/` (index, how-it-works, FAQ, CLAIMS); add a note on C01 in `docs/TEST_REPORT.md` | done: context, 5 site pages, CLAIMS, TEST_REPORT and SERVER_FINDINGS updated; S16 row added to the how-it-works rules table |
 
@@ -272,7 +278,7 @@ Anything else goes in the report as a question. Delete the temporary folder at t
 |---|---|---|
 | U1 | Click through `docs/MANUAL_TEST_CHECKLIST.md` in a browser with other apps closed | todo |
 | U2 | Ask 3–5 friends/relatives to type orders for 15 catalogue items, the way they'd really WhatsApp them (feeds A4/C8) | **Done 15 Oct.** Round 1 excluded (AI-written); round 2: 3 hand-typed replies (6 items), 11 pieces, labelled by the owner and scored once (C8). Earlier note: **doing (15 Oct)**: no shopkeeper available, so the owner chose the friends option. The 15 items are fixed in EVALUATION.md. Raw replies go to `data/human/raw.txt` (gitignored), then the owner labels with `npm run label`, then Claude locks and scores once (C8). |
-| U3 | Record a 60–90 s demo with Wi-Fi off (sample order 03), save as `site/assets/demo.mp4` | todo |
+| U3 | Record the demo (3 min, one take, Wi-Fi off) | done 16 Oct: on YouTube https://www.youtube.com/watch?v=2oqAtUKSwRc. The owner chose NOT to put the video file in the repo; the homepage poster links to YouTube (no embedded player). |
 | U4 | Commit and push in reviewed batches (no AI co-author lines); enable GitHub Pages (Settings → Pages → Source: GitHub Actions) | Pages **done 15 Oct**: https://bipul724.github.io/parchimatch/ is live. Claude checked all 7 pages (200), the live numbers (205 tests, 1.5/2.6 s), internal links (only `assets/demo.mp4` is missing, waiting on U3; the poster is labelled "coming soon") and phone width (no horizontal scroll). Next: the .tech domain. |
 | U5 | Rewrite the DEV post in your own voice, add screenshots/video, publish with `#devchallenge #hf26challenge`, and disclose AI help in the post | todo |
 | U6 | Entire | **not doing (15 Oct, owner's decision):** sharing sessions on Entire would publish the instructions typed into them, and the owner wants none of their instructions online. Nothing was installed. |

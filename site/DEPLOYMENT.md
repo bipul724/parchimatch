@@ -36,4 +36,4 @@ Use a domain you control, such as `example.tech`. No current free-domain offer i
 
 ## Demo video
 
-Add your real recording at `site/assets/demo.mp4`, then commit it when ready. No fake or empty MP4 is shipped. The local poster is shown until the recording is available; the site does not embed a third-party video player.
+The demo video is hosted on YouTube (https://www.youtube.com/watch?v=2oqAtUKSwRc), not in this repository; the homepage links to it from the poster. No video file is shipped, and the site does not embed a third-party video player.
